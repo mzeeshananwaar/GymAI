@@ -353,5 +353,5 @@ app.post('/update/:id', isAdmin, (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`GymAI Server running at http://localhost:${PORT}`);
+    console.log(`GymAI Server running at [https://gymai-ten.vercel.app](https://gymai-ten.vercel.app)${PORT}`);
 });
