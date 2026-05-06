@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym AI Pro | Future of Fitness</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary: #22c55e;
+      --bg-dark: #020617;
+      --card-glass: rgba(255, 255, 255, 0.03);
+      --border-glass: rgba(255, 255, 255, 0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-dark); color: white; overflow-x: hidden; }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 8%; position: fixed; width: 100%;
+      background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(15px);
+      z-index: 1000; border-bottom: 1px solid var(--border-glass);
+    }
+    .navbar h2 { font-weight: 900; letter-spacing: -1px; }
+    .navbar h2 span { color: var(--primary); }
+    .nav-links a {
+      margin-left: 20px; padding: 10px 25px; color: white;
+      text-decoration: none; border-radius: 50px; font-weight: 600;
+      transition: 0.3s; border: 1px solid var(--border-glass);
+    }
+    .nav-links a.active { background: var(--primary); border-color: var(--primary); color: black; }
+
+    /* HERO SECTION */
+    .hero {
+      height: 100vh; display: flex; align-items: center; padding: 0 8%;
+      background: radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent);
+    }
+    .hero-content { flex: 1; animation: fadeIn 1.5s ease; }
+    .hero-image { flex: 1; display: flex; justify-content: center; }
+    .hero-image img {
+      width: 80%; border-radius: 30px; border: 1px solid var(--border-glass);
+      transform: perspective(1000px) rotateY(-10deg); transition: 0.5s;
+    }
+    .hero h1 { font-size: 70px; font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+    .hero h1 span {
+      background: linear-gradient(to right, #22c55e, #3b82f6);
+      .hero h1 span {
+    background: linear-gradient(to right, #22c55e, #3b82f6);
+    -webkit-background-clip: text;
+    background-clip: text; /* Yeh standard property hai */
+    -webkit-text-fill-color: transparent;
+    color: transparent; /* Fallback color */
+}           /* Fallback color */
+-webkit-text-fill-color: transparent;
+} /* Sirf aik bracket yahan aayega jo span ko close karega */
+    .hero p { font-size: 20px; color: #94a3b8; margin-bottom: 30px; max-width: 500px; }
+
+    /* BUTTONS */
+    .btn-main {
+      padding: 15px 40px; background: var(--primary); border: none;
+      border-radius: 50px; font-size: 18px; font-weight: 900;
+      cursor: pointer; color: black; transition: 0.3s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-main:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4); }
+
+    /* FEATURES GRID */
+    .features { padding: 100px 8%; text-align: center; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px; }
+    .card {
+      background: var(--card-glass); padding: 40px; border-radius: 30px;
+      border: 1px solid var(--border-glass); transition: 0.4s; text-align: left;
+      cursor: pointer; text-decoration: none; display: block; color: white;
+    }
+    .card i { font-size: 40px; color: var(--primary); margin-bottom: 20px; }
+    .card:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--primary); transform: translateY(-15px); }
+
+    /* INTERACTIVE SECTIONS */
+    .interactive-section { padding: 80px 8%; background: #050505; text-align: center; }
+    .tool-container { 
+        background: var(--card-glass); padding: 40px; border-radius: 30px; 
+        border: 1px solid var(--border-glass); max-width: 800px; margin: 0 auto;
+    }
+    .input-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+    .result-box { 
+        margin-top: 20px; padding: 20px; border-radius: 15px; 
+        background: rgba(34, 197, 94, 0.1); color: var(--primary); display: none; 
+    }
+
+    /* TRANSFORMATION */
+    .gym-final-layout { max-width: 1200px; margin: 80px auto; padding: 20px; text-align: center; }
+    .stats-banner {
+        display: flex; justify-content: space-around; background: rgba(255,255,255,0.03);
+        padding: 40px; border-radius: 20px; margin-bottom: 60px; border: 1px solid #222;
+    }
+    .stat-card h2 { color: #00ff88; font-size: 3.5rem; margin: 0; }
+    .stat-card p { color: #888; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }
+    .mega-transformation { margin-bottom: 100px; }
+    .large-image-grid { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+    .big-pic-box {
+        position: relative; flex: 1; min-width: 300px; max-width: 550px; height: 600px;
+        background: #111; border-radius: 30px; overflow: hidden; border: 3px solid #333;
+    }
+    .big-pic-box img { width: 100%; height: 100%; object-fit: cover; }
+    .label-tag { position: absolute; bottom: 20px; left: 20px; background: #444; color: white; padding: 10px 20px; border-radius: 10px; font-weight: bold; }
+    .label-tag.after { background: #00ff88; color: black; }
+
+    /* SIGNUP SECTION */
+    .join-section { padding: 100px 8%; background: #000; text-align: center; }
+    .form-container {
+      max-width: 500px; margin: 0 auto; background: var(--card-glass);
+      padding: 40px; border-radius: 30px; border: 1px solid var(--border-glass);
+    }
+    input {
+      width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 10px;
+      border: 1px solid var(--border-glass); background: rgba(255,255,255,0.05);
+      color: white; outline: none;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <h2>Gym<span>AI</span></h2>
+    <div class="nav-links">
+      <a href="/login.html">Login</a>
+      <a href="#signup-section" class="active">Join Now</a>
+    </div>
+  </nav>
+
+  <!-- 1st: HERO SECTION (Elite Coaching) -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Elite Coaching <br><span>Driven by AI</span></h1>
+      <p>Stop guessing. Start gaining. Get a personalized workout and diet plan that evolves with your progress.</p>
+      <a href="#signup-section" class="btn-main">Start Your Transformation</a>
+    </div>
+    <div class="hero-image">
+      <img src="image/gymimage1.webp" alt="AI Hero">
+    </div>
+  </section>
+
+  <!-- 2nd: FEATURES (Supercharge Your Gains) -->
+  <section class="features" id="features-section">
+    <h2>Supercharge Your <span>Gains</span></h2>
+    <div class="feature-grid">
+      <a href="#signup-section" class="card">
+        <i class="fas fa-brain"></i>
+        <h3>AI Smart Coach</h3>
+        <p>Real-time exercise adjustments based on your recovery and performance data.</p>
+      </a>
+      <a href="#signup-section" class="card">
+        <i class="fas fa-utensils"></i>
+        <h3>Localized Diet</h3>
+        <p>Custom macros that include your favorite Pakistani dishes, optimized for health.</p>
+      </a>
+     <a href="#signup-section" class="card">
+        <i class="fas fa-rocket"></i>
+        <h3>Future of Fitness</h3>
+        <p>Get Up & Sign Up for Hustle-Free Gym Practice!</p>
+    </a>
+    <a href="#signup-section" class="card">
+        <i class="fas fa-dumbbell"></i>
+        <h3>Smart Workouts</h3>
+        <p>Get AI-generated exercise plans that adapt to your strength levels in real-time.</p>
+    </a>
+    </div>
+  </section>
+
+  <!-- 3rd: BMI CALCULATOR -->
+  <section class="interactive-section">
+    <h2>Check Your <span>Fitness Level</span></h2>
+    <p style="color: #94a3b8; margin-bottom: 30px;">Calculate your BMI instantly below.</p>
+    <div class="tool-container">
+        <div class="input-group">
+            <input type="number" id="weight" placeholder="Weight (kg)">
+            <input type="number" id="height" placeholder="Height (cm)">
+            <button onclick="calculateBMI()" class="btn-main">Calculate</button>
+        </div>
+        <div id="bmi-result" class="result-box"></div>
+    </div>
+  </section>
+
+  <!-- 4th: TRANSFORMATION PREVIEW -->
+  <div class="gym-final-layout">
+    <div class="mega-transformation">
+        <h2 style="font-size: 2.8rem; margin-bottom: 40px;">Transformation <span>Preview</span></h2>
+        <div class="large-image-grid">
+            <div class="big-pic-box">
+                <img src="/image/beforegymai.png" alt="Before">
+                <div class="label-tag">BEFORE</div>
+            </div>
+            <div class="big-pic-box">
+                <img src="/image/aftergymai.png" alt="After">
+                <div class="label-tag after">AFTER</div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- 5th: AI WORKOUT PREVIEW -->
+  <section class="interactive-section" style="background: #000;">
+    <h2>AI Workout <span>Generator Preview</span></h2>
+    <p style="color: #94a3b8;">Choose a goal to see a sample AI plan.</p>
+    <div class="input-group" style="margin-bottom: 30px;">
+        <button onclick="showPlan('Fat Loss')" class="btn-main" style="background: transparent; color: white; border: 1px solid #22c55e;">Fat Loss</button>
+        <button onclick="showPlan('Muscle Gain')" class="btn-main" style="background: transparent; color: white; border: 1px solid #22c55e;">Muscle Gain</button>
+    </div>
+    <div id="plan-display" class="tool-container" style="text-align: left; display:none;">
+        <h4 id="plan-title" style="color: var(--primary); margin-bottom: 10px;"></h4>
+        <p id="plan-content" style="font-size: 14px; line-height: 1.8;"></p>
+    </div>
+  </section>
+
+  <!-- 6th: SIGNUP SECTION (Ready to Level Up) -->
+  <section class="join-section" id="signup-section">
+    <h2>Ready to Level Up?</h2>
+    <p style="color: #94a3b8; margin-bottom: 40px;">Join 5,000+ athletes training with GymAI.</p>
+    <div class="form-container">
+      <form id="signupForm">
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="Email Address" required>
+        <input type="password" name="password" placeholder="Create Password" required>
+        <button type="submit" class="btn-main" style="width: 100%;">Create My Account</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- END: USER STATS (Counters) -->
+  <div class="gym-final-layout">
+    <div class="stats-banner">
+        <div class="stat-card">
+            <h2 id="user-count">27+</h2>
+            <p>Active Users</p>
+        </div>
+        <div class="stat-card">
+            <h2>2450+</h2>
+            <p>Workouts Logged</p>
+        </div>
+        <div class="stat-card">
+            <h2>150+</h2>
+            <p>Plans Created</p>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    function calculateBMI() {
+        let w = document.getElementById('weight').value;
+        let h = document.getElementById('height').value / 100;
+        if(w && h) {
+            let bmi = (w / (h * h)).toFixed(1);
+            let res = document.getElementById('bmi-result');
+            res.style.display = "block";
+            res.innerHTML = "Your BMI is <b>" + bmi + "</b>. " + (bmi < 18.5 ? "Underweight" : (bmi < 25 ? "Healthy" : "Overweight"));
+        }
+    }
+
+    function showPlan(goal) {
+        let display = document.getElementById('plan-display');
+        let title = document.getElementById('plan-title');
+        let content = document.getElementById('plan-content');
+        display.style.display = "block";
+        title.innerText = "Sample AI " + goal + " Routine:";
+        if(goal === 'Fat Loss') {
+            content.innerHTML = "1. Jumping Jacks: 3 sets x 30 sec<br>2. Mountain Climbers: 3 sets x 20 reps<br>3. Burpees: 3 sets x 10 reps<br><br><i>Signup for full access!</i>";
+        } else {
+            content.innerHTML = "1. Pushups: 4 sets x 15 reps<br>2. Squats: 4 sets x 20 reps<br>3. Plank: 3 sets x 1 min<br><br><i>Signup for full access!</i>";
+        }
+    }
+
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault(); // Page refresh ko rokne ke liye
+      
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch('/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const resultText = await response.text();
+
+    if (response.status === 200 || response.status === 201) {
+          // Alert hata diya hai, ab seedha redirect hoga
+          window.location.href = '/onboarding.html'; 
+        } else if (response.status === 400) {
+          // Error alert abhi bhi zaroori hai taake user ko duplicate email ka pata chale
+          alert(resultText); 
+        } else {
+          alert("Error: " + resultText);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Connection Error!");
+      }
+    });
+
+
+
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

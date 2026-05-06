@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GymAI</string>
+    <string name="title_activity_main">GymAI</string>
+    <string name="package_name">com.gymai.app</string>
+    <string name="custom_url_scheme">com.gymai.app</string>
+</resources>

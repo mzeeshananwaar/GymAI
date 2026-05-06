@@ -1,0 +1,9 @@
+@echo off
+title GymAI Launcher
+echo Starting GymAI Server...
+start /min node server.js
+echo Waiting for server to warm up...
+timeout /t 5 /nobreak > nul
+echo Launching GymAI Desktop App...
+start msedge --app=http://localhost:3000
+exit

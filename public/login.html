@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GymAI | Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top right, #1e293b, #0f172a);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    /* Animated background glow */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: #22c55e;
+      filter: blur(150px);
+      opacity: 0.15;
+      z-index: -1;
+      top: 10%;
+      left: 10%;
+    }
+
+    .box {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 40px;
+      border-radius: 24px;
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      width: 380px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    h2 {
+      margin-bottom: 30px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 15px 12px 45px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155;
+      color: white;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    input:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #22c55e;
+      color: #0f172a;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #16a34a;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.4);
+    }
+
+    .footer-text {
+      margin-top: 25px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    a { 
+      color: #22c55e; 
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .logo-icon {
+      font-size: 40px;
+      color: #22c55e;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <div class="logo-icon">
+      <i class="fas fa-dumbbell"></i>
+    </div>
+    <h2>Welcome Back</h2>
+
+    <form id="loginForm">
+  <div class="input-group">
+    <i class="fas fa-envelope"></i>
+    <input type="email" name="email" placeholder="Email Address" required>
+  </div>
+  <div class="input-group">
+    <i class="fas fa-lock"></i>
+    <input type="password" name="password" placeholder="Password" required>
+  </div> 
+  <button type="submit">Login</button>
+</form>
+      
+
+
+    <div class="footer-text">
+      No account? <a href="/signup.html">Create one here</a>
+    </div>
+  </div>
+
+  <!-- Ye script </body> tag se bilkul pehle aaye ga -->
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault(); // Page refresh ko rokne ke liye sab se zaroori line
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                // Sahi password par redirect
+                window.location.href = result.redirectTo; 
+            } else {
+                // Ghalat password ya email par alert dikhayen
+                const errorMsg = await response.text();
+                alert(errorMsg); 
+            }
+        } catch (err) {
+            console.error("Login Error:", err);
+            alert("Server se connection nahi ho pa raha.");
+        }
+    });
+</script>
+</body>
+<a href="index.html" class="fixed-back-btn" style="position: fixed; top: 25px; left: 25px; background: #22c55e; color: #000; padding: 10px 20px; border-radius: 50px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+    <i class="fas fa-arrow-left"></i> Back to Home
+</a>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Dashboard | Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Arial; background: #0f172a; color: white; margin: 0; display: flex; }
+        
+        /* Compact Sidebar */
+        .sidebar { width: 80px; background: #1e293b; height: 100vh; position: fixed; display: flex; flex-direction: column; align-items: center; padding-top: 20px; border-right: 1px solid #334155; transition: width 0.3s; overflow: hidden; z-index: 10; }
+        .sidebar:hover { width: 200px; }
+        .sidebar a { color: #94a3b8; text-decoration: none; margin: 20px 0; display: flex; align-items: center; width: 100%; padding-left: 25px; gap: 20px; }
+        .sidebar a:hover { color: #22c55e; }
+        .sidebar i { font-size: 20px; }
+        .sidebar span { display: none; white-space: nowrap; }
+        .sidebar:hover span { display: inline; }
+
+        /* Main Content */
+        .main-content { margin-left: 80px; padding: 30px; width: 100%; transition: margin-left 0.3s; }
+        .sidebar:hover + .main-content { margin-left: 200px; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        
+        button, .btn { padding: 10px 15px; background: #22c55e; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        input { padding: 10px; margin: 5px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 5px; }
+
+        #calendar button { background: #334155; transition: 0.3s; width: 50px; }
+        #calendar button:hover { background: #22c55e; }
+        .active-day { background: #22c55e !important; box-shadow: 0 0 10px #22c55e; }
+        
+        .calorie-badge { background: rgba(34, 197, 94, 0.2); color: #22c55e; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.9em; }
+
+        /* Typing Animation Style */
+        .typing-indicator { font-style: italic; color: #94a3b8; font-size: 0.85em; align-self: flex-start; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <a href="javascript:void(0)" onclick="window.location.href='index.html'"><i class="fas fa-home"></i> <span>Home</span></a>
+        <a href="#" onclick="showSection('workouts')"><i class="fas fa-dumbbell"></i> <span>My Workouts</span></a>
+        <a href="#" onclick="showSection('diet')"><i class="fas fa-apple-alt"></i> <span>Diet Plan</span></a>
+        <a href="/admin.html" id="adminBtn" style="display:none;"><i class="fas fa-user-shield"></i> <span>Admin Panel</span></a>
+        <a href="/logout" style="margin-top: auto; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+    </div>
+
+    <div class="main-content">
+        <h1 id="welcomeText">💪 Gym Dashboard</h1>
+
+        <div class="grid-container">
+            <!-- STATS -->
+            <div class="card">
+                <h2 id="totalUsers">...</h2>
+                <p>Community Members</p>
+            </div>
+
+            <!-- TRACKING FORM -->
+            <!-- TRACKING FORM (FIXED) -->
+        <div class="card">
+             <h3>🏋️ Log Session</h3>
+                <form id="logSessionForm"> <!-- action aur method hata diye -->
+                 <input type="hidden" name="user_id" id="fitnessUserId">
+                 <input type="number" name="weight" placeholder="Weight (kg)" required>
+                 <input type="text" name="workout" placeholder="Exercise Name" required>
+             <button type="submit" class="btn">Save</button>
+    </form>
+</div>
+        </div>
+
+        <!-- SMART DAY PLANNER -->
+        <div class="card" style="margin-top: 20px; border-left: 5px solid #22c55e;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="planDayTitle">Today's Focus</h3>
+                <span class="calorie-badge" id="planCalories">0 kcal</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                    <p style="color: #94a3b8; margin: 0; font-size: 0.8em;">WORKOUT</p>
+                    <b id="planWorkoutText">Rest Day</b>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                    <p style="color: #94a3b8; margin: 0; font-size: 0.8em;">DIET PLAN</p>
+                    <b id="planDietText">Balanced Meal</b>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROGRESS SECTION -->
+        <div class="grid-container" style="margin-top: 20px;">
+            <div class="card" style="grid-column: span 2;">
+                <h3>📈 Weight Progress</h3>
+                <canvas id="weightChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- WEEKLY CALENDAR -->
+        <div class="card" style="margin-top: 20px;">
+            <h3>📅 Weekly Workout Schedule</h3>
+            <div id="calendar"></div>
+            <div id="dayDetails" style="margin-top: 15px; padding: 15px; background: #0f172a; border-radius: 8px;">
+                Click a day to see your workout plan.
+            </div>
+        </div>
+
+        <!-- EXTRA SECTIONS -->
+        <div id="extraContent" class="card" style="margin-top: 20px; display: none;">
+            <h3 id="extraTitle"></h3>
+            <div id="extraBody"></div>
+        </div>
+    </div>
+
+    <!-- AI CHATBOT -->
+    <div id="chatToggle" style="position:fixed; bottom:20px; right:20px; background:#22c55e; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:30px; z-index: 100;">💬</div>
+    <div id="chatWindow" style="position:fixed; bottom:90px; right:20px; width:350px; height:450px; background:#1e293b; border-radius:15px; display:none; flex-direction:column; border:1px solid #334155; overflow:hidden; z-index: 100;">
+        <div style="background:#22c55e; padding:15px; font-weight:bold;">GymAI Coach</div>
+        <div id="chatMessages" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;"></div>
+        <div style="padding:10px; display:flex; gap:5px; background:#0f172a;">
+            <input type="text" id="chatInput" placeholder="Ask AI Coach..." style="flex:1; margin:0;">
+            <button onclick="sendMessage()" style="margin:0;">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // ---------------- DATA ----------------
+        const fitnessData = {
+            "Mon": { workout: "Chest & Triceps", diet: "Oatmeal + 4 Egg Whites", cal: "1900 kcal" },
+            "Tue": { workout: "Back & Biceps", diet: "Chicken, Rice & Broccoli", cal: "2100 kcal" },
+            "Wed": { workout: "Legs & Abs Training", diet: "Greek Yogurt & Fruit Mix", cal: "1850 kcal" },
+            "Thu": { workout: "Shoulders & Cardio", diet: "Baked Fish & Quinoa", cal: "1750 kcal" },
+            "Fri": { workout: "Full Body Blast", diet: "Beef Steak & Sweet Potato", cal: "2200 kcal" },
+            "Sat": { workout: "Active Stretching", diet: "Smoothie Bowl & Nuts", cal: "1600 kcal" },
+            "Sun": { workout: "Rest & Recovery", diet: "High Protein Salad", cal: "2000 kcal" }
+        };
+
+        // ---------------- AUTH & SESSION CHECK ----------------
+        // Session se data fetch karke admin check aur UI update karna
+        fetch('/api/current-user')
+            .then(res => res.json())
+            .then(user => {
+                if (user.id) {
+                    document.getElementById('fitnessUserId').value = user.id;
+                    document.getElementById('welcomeText').innerText = `💪 Welcome, ${user.name}`;
+                    
+                    // ADMIN PANEL VISIBILITY FIX
+                    if (user.role === 'admin') {
+                        document.getElementById('adminBtn').style.display = 'flex';
+                    }
+                    
+                    loadGraph();
+                } else {
+                    window.location.href = "/login.html"; // Session nahi hai to redirect
+                }
+            });
+
+        // ---------------- GRAPH LOGIC ----------------
+        function loadGraph() {
+            fetch('/fitness-data')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length === 0) return;
+                    const ctx = document.getElementById("weightChart").getContext("2d");
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(d => d.date.split('T')[0]),
+                            datasets: [{ 
+                                label: 'Weight (kg)', 
+                                data: data.map(d => d.weight), 
+                                borderColor: '#22c55e', 
+                                tension: 0.3, 
+                                fill: true, 
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)' 
+                            }]
+                        }
+                    });
+                });
+        }
+
+        // ---------------- CALENDAR & STATS ----------------
+        const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        document.getElementById("calendar").innerHTML = days.map(d => `<button id="btn-${d}" onclick="loadDay('${d}', this)">${d}</button>`).join('');
+
+        function loadDay(day, btn) {
+            document.querySelectorAll('#calendar button').forEach(b => b.classList.remove('active-day'));
+            if(btn) btn.classList.add('active-day');
+            const plan = fitnessData[day];
+            document.getElementById("dayDetails").innerHTML = `<h4>${day} Routine:</h4><p>🏋️ <b>Workout:</b> ${plan.workout}</p><p>🥗 <b>Diet:</b> ${plan.diet}</p><p>🔥 <b>Target:</b> ${plan.cal}</p>`;
+        }
+
+        function setToday() {
+            const shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const today = shortDays[new Date().getDay()];
+            document.getElementById('planDayTitle').innerText = today + "'s Focus";
+            document.getElementById('planWorkoutText').innerText = fitnessData[today]?.workout || "Rest";
+            document.getElementById('planDietText').innerText = fitnessData[today]?.diet || "Healthy Food";
+            document.getElementById('planCalories').innerText = fitnessData[today]?.cal || "0 kcal";
+            const todayBtn = document.getElementById('btn-' + today);
+            if(todayBtn) loadDay(today, todayBtn);
+        }
+
+        fetch('/stats').then(res => res.json()).then(data => { document.getElementById("totalUsers").innerText = data.total; });
+
+        function showSection(type) {
+            const extra = document.getElementById('extraContent');
+            const title = document.getElementById('extraTitle');
+            const body = document.getElementById('extraBody');
+            extra.style.display = 'block';
+            const today = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date().getDay()];
+            if(type === 'workouts') {
+                title.innerText = "🏋️ My Exercises";
+                body.innerHTML = `<ul><li>Current Plan: ${fitnessData[today].workout}</li><li>Intensity: High</li><li>Duration: 45-60 mins</li></ul>`;
+            } else {
+                title.innerText = "🥗 Personalized Diet Plan";
+                body.innerHTML = `<p><b>Today's Meal:</b> ${fitnessData[today].diet}</p><p><b>Calories:</b> ${fitnessData[today].cal}</p>`;
+            }
+            extra.scrollIntoView({behavior: 'smooth'});
+        }
+
+        // ---------------- CHAT LOGIC (FIXED) ----------------
+        const chatWindow = document.getElementById('chatWindow');
+        const chatInput = document.getElementById('chatInput');
+        const msgDiv = document.getElementById('chatMessages');
+
+        document.getElementById('chatToggle').onclick = () => {
+            chatWindow.style.display = chatWindow.style.display === 'none' ? 'flex' : 'none';
+        };
+
+        // ENTER KEY FIX
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            // User message show karna
+            msgDiv.innerHTML += `<div style="align-self:flex-end; background:#22c55e; padding:8px; border-radius:10px; color:white;">${msg}</div>`;
+            chatInput.value = '';
+            msgDiv.scrollTop = msgDiv.scrollHeight;
+
+            // TYPING INDICATOR SHOW KARNA
+            const typingId = "typing-" + Date.now();
+            msgDiv.innerHTML += `<div id="${typingId}" class="typing-indicator">GymAI is typing...</div>`;
+            msgDiv.scrollTop = msgDiv.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                
+                // Typing indicator hatana
+                const indicator = document.getElementById(typingId);
+                if(indicator) indicator.remove();
+
+                // Bot reply dikhana
+                msgDiv.innerHTML += `<div style="align-self:flex-start; background:#334155; padding:8px; border-radius:10px; color:white;"><strong>GymAI:</strong> ${data.reply}</div>`;
+                msgDiv.scrollTop = msgDiv.scrollHeight;
+            } catch (err) {
+                const indicator = document.getElementById(typingId);
+                if(indicator) indicator.remove();
+                msgDiv.innerHTML += `<div style="align-self:flex-start; background:#ef4444; padding:8px; border-radius:10px;">Error connecting to coach.</div>`;
+            }
+        }
+
+        window.onload = setToday;
+
+
+        // --- LOG SESSION FETCH LOGIC ---
+document.getElementById('logSessionForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Blank page par janay se rokta hai
+
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const response = await fetch('/fitness-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert("Session logged successfully! 💪");
+            e.target.reset(); // Form khali karne ke liye
+            loadGraph();      // Graph refresh karne ke liye
+        } else {
+            alert("Error saving session. Please try again.");
+        }
+    } catch (err) {
+        console.error("Fetch error:", err);
+        alert("Connection failed!");
+    }
+});
+
+
+
+    </script>
+</body>
+</html>

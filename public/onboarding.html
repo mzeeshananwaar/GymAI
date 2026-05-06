@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym AI | Onboarding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a); 
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 14px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin: 20px 0 10px;
+            text-align: left;
+            letter-spacing: 1px;
+        }
+        .goal-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .goal-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid #334155;
+            padding: 15px 5px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .goal-card:hover {
+            border-color: #22c55e;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .goal-card.selected {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.15);
+            transform: scale(1.02);
+        }
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-input {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            font-family: inherit;
+        }
+        .stat-input:focus {
+            border-color: #22c55e;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: #22c55e;
+            border: none;
+            border-radius: 12px;
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: 0.3s;
+        }
+        .btn-submit:hover {
+            background: #16a34a;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Build Your AI Profile 🚀</h2>
+    <form action="/save-onboarding" method="POST" id="onboardingForm">
+        
+        <div class="section-title">Step 1: Choose Your Goal 🎯</div>
+        <div class="goal-container">
+            <!-- Weight Management -->
+            <div class="goal-card" onclick="setVal('goal', 'fat_loss', this)">
+                <div style="font-size: 22px;">🔥</div>
+                <div style="font-size: 12px; margin-top: 5px;">Fat Loss</div>
+            </div>
+            <div class="goal-card" onclick="setVal('goal', 'weight_gain', this)">
+                <div style="font-size: 22px;">⚖️</div>
+                <div style="font-size: 12px; margin-top: 5px;">Weight Gain</div>
+            </div>
+            <div class="goal-card" onclick="setVal('goal', 'bulking', this)">
+                <div style="font-size: 22px;">💪</div>
+                <div style="font-size: 12px; margin-top: 5px;">Bulking</div>
+            </div>
+
+            <!-- Performance -->
+            <div class="goal-card" onclick="setVal('goal', 'strength', this)">
+                <div style="font-size: 22px;">🏋️</div>
+                <div style="font-size: 12px; margin-top: 5px;">Strength</div>
+            </div>
+            <div class="goal-card" onclick="setVal('goal', 'leg_power', this)">
+                <div style="font-size: 22px;">🦵</div>
+                <div style="font-size: 12px; margin-top: 5px;">Leg Power</div>
+            </div>
+            <div class="goal-card" onclick="setVal('goal', 'endurance', this)">
+                <div style="font-size: 22px;">🏃</div>
+                <div style="font-size: 12px; margin-top: 5px;">Endurance</div>
+            </div>
+
+            <!-- Wellness -->
+            <div class="goal-card" onclick="setVal('goal', 'flexibility', this)">
+                <div style="font-size: 22px;">🧘</div>
+                <div style="font-size: 12px; margin-top: 5px;">Flexibility</div>
+            </div>
+            <div class="goal-card" onclick="setVal('goal', 'athleticism', this)">
+                <div style="font-size: 22px;">⚡</div>
+                <div style="font-size: 12px; margin-top: 5px;">Athleticism</div>
+            </div>
+            <div class="goal-card" onclick="setVal('goal', 'recovery', this)">
+                <div style="font-size: 22px;">🩹</div>
+                <div style="font-size: 12px; margin-top: 5px;">Recovery</div>
+            </div>
+        </div>
+
+        <div class="section-title">Step 2: Physical Stats 📏</div>
+        <div class="stats-row">
+            <input type="number" name="height" class="stat-input" placeholder="Height (cm)" required>
+            <input type="number" name="weight" class="stat-input" placeholder="Weight (kg)" required>
+        </div>
+        
+        <input type="hidden" name="goal" id="inputGoal" required>
+        <input type="hidden" name="diet" id="inputDiet" value="non-veg">
+
+        <div class="section-title">Step 3: Diet Preference 🥦</div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button type="button" class="goal-card" style="flex:1" onclick="setVal('diet', 'veg', this)">🥦 Veg</button>
+            <button type="button" class="goal-card selected" style="flex:1" onclick="setVal('diet', 'non-veg', this)">🍗 Non-Veg</button>
+        </div>
+
+        <button type="submit" class="btn-submit">Generate My AI Plan</button>
+    </form>
+</div>
+
+<script>
+    function setVal(type, val, el) {
+        // Sirf relevant container ke cards ko target karein
+        const parent = el.parentElement;
+        parent.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+        
+        // Card highlight karein
+        el.classList.add('selected');
+
+        // Hidden input update karein
+        if(type === 'goal') {
+            document.getElementById('inputGoal').value = val;
+        } else if(type === 'diet') {
+            document.getElementById('inputDiet').value = val;
+        }
+    }
+
+    // Form submit hone se pehle check karein ke goal select hua ya nahi
+    document.getElementById('onboardingForm').onsubmit = function(e) {
+        if (!document.getElementById('inputGoal').value) {
+            alert("Please select your fitness goal first!");
+            e.preventDefault();
+        }
+    };
+</script>
+
+</body>
+</html>
