@@ -24,10 +24,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // --- DATABASE CONNECTION ---
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "9218",
-  database: "fyp"
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 20028,
+    ssl: {
+        rejectUnauthorized: false // Online connection (Aiven) ke liye ye zaroori hai
+    }
 });
 
 db.connect((err) => {
@@ -353,5 +357,5 @@ app.post('/update/:id', isAdmin, (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`GymAI Server running at [https://gymai-ten.vercel.app](https://gymai-ten.vercel.app)${PORT}`);
+console.log(`GymAI Server running at https://gymai-ten.vercel.app`);
 });
