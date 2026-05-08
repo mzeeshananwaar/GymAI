@@ -146,44 +146,56 @@
 </div>
 
 <script>
-  // 1. URL se ID nikalna
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
-  
   const editForm = document.getElementById('editForm');
   const loader = document.getElementById('loader');
 
-  // Agar ID na mile toh error dikhayein
   if (!id) {
-    loader.innerText = "Error: No user ID provided in URL.";
+    loader.innerText = "Error: No user ID provided.";
   } else {
-    // 2. Server se data mangwana
     fetch('/user/' + id)
-      .then(res => {
-        if (!res.ok) throw new Error("User not found or Server error");
-        return res.json();
-      })
+      .then(res => res.json())
       .then(data => {
-        // Form fields bharna
         document.getElementById('name').value = data.name || "";
         document.getElementById('email').value = data.email || "";
         document.getElementById('phone').value = data.phone || ""; 
         document.getElementById('role').value = data.role || "user";
-
-        // Form ka action URL set karna
-        editForm.action = '/update/' + id;
-        
-        // Loader chhupana aur form dikhana
         loader.style.display = 'none';
         editForm.style.display = 'block';
       })
       .catch(err => {
-        loader.innerText = "Error: Could not load user data.";
-        loader.style.color = "#ef4444";
-        console.error("Fetch error:", err);
+        loader.innerText = "Error loading data.";
       });
   }
-</script>
 
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      role: document.getElementById('role').value
+    };
+
+    try {
+      const response = await fetch('/update/' + id, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert("User updated successfully! ✅");
+        window.location.href = "/admin.html";
+      } else {
+        const txt = await response.text();
+        alert("Error: " + txt);
+      }
+    } catch (err) {
+      alert("Connection failed!");
+    }
+  });
+</script>
 </body>
 </html>

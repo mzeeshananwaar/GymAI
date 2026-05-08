@@ -384,24 +384,29 @@ app.get('/user/:id', async (req, res) => {
 });
 
 // 2. Update User Data
+// 2. Update User Data
+// --- USER MANAGEMENT (UPDATE) ---
 app.post('/update/:id', isAdmin, async (req, res) => {
   try {
+    const userId = req.params.id; // Yeh line missing thi aapki image mein
     const { name, email, phone, role } = req.body;
 
+    // UPDATE Query
     await pool.query(
       "UPDATE users SET name=?, email=?, phone=?, role=? WHERE id=?",
-      [name, email, phone, role, req.params.id]
+      [name, email, phone, role, userId]
     );
 
-    res.redirect('/admin.html');
+    res.status(200).send("Updated successfully!");
 
   } catch (err) {
-    res.status(500).send("Update failed");
+    console.error("UPDATE ERROR:", err.message);
+    res.status(500).send("Database error occurred.");
   }
 });
 
-const PORT = process.env.PORT || 3000; // Yeh Vercel ke liye zaroori hai
-// app.listen(PORT, () => {
-app.listen(process.env.PORT || 3000, () => {
-  console.log("GymAI Server running...");
+// Server listen logic
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`GymAI Server running on port ${PORT}...`);
 });
