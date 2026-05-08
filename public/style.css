@@ -160,3 +160,42 @@ button { padding:10px; background:#22c55e; border:none; }
     background: #00ff88; 
     color: black; 
 }
+
+
+/* Floating Toggle Button */
+/* Chat Window Wrapper ko Fixed karein */
+#chat-toggle {
+    position: fixed !important;
+    bottom: 20px;
+    right: 20px;
+    background: #22c55e;
+    color: black;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.chat-wrapper {
+    position: fixed !important;
+    bottom: 90px;
+    right: 20px;
+    width: 320px;
+    height: 450px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    display: none; /* Initial state hidden */
+    flex-direction: column;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.chat-header { background: #22c55e; color: black; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; }
+.chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+.chat-input-area { padding: 10px; display: flex; background: #0f172a; gap: 5px; }

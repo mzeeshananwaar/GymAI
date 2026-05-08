@@ -3,10 +3,9 @@ function joinNow() {
 }
 
 // Apne laptop ka IP address yahan variable mein set karein
-const BASE_URL = 'http://10.172.74.33:3000';
+const BASE_URL = window.location.origin;
 // 1. Database se Real User Count lena
-fetch(`${BASE_URL}/api/public-user-count`)[cite: 1]
-    .then(res => res.json())
+fetch(`${BASE_URL}/api/public-user-count`)    .then(res => res.json())
     .then(data => {
         const userElement = document.getElementById('user-count');
         if (userElement) {

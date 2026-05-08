@@ -1,6 +1,6 @@
 const express = require('express');
+const pool = require("./db");
 const path = require('path');
-const mysql = require('mysql2');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const app = express();
@@ -23,24 +23,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- DATABASE CONNECTION ---
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 20028,
-    ssl: {
-        rejectUnauthorized: false // Online connection (Aiven) ke liye ye zaroori hai
-    }
-});
 
-db.connect((err) => {
-  if (err) {
-    console.log("❌ Database Connection Failed:", err);
-  } else {
-    console.log("✅ Database Connected Successfully");
-  }
-});
+
+
+
+
+
 
 // --- GROQ AI SETUP ---
 const groq = new Groq({ 
@@ -66,16 +54,24 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: "Message is required" });
   }
 
-  try {
+    try {
     const completion = await groq.chat.completions.create({
       messages: [
         { 
           role: "system", 
-          content: "You are GymAI, a professional fitness coach. Help users with workout and diet. Respond ONLY in a mix of Roman Urdu and English but don't in hidni. Keep answers short (max 2 sentences)." 
+          content: `You are GymAI, a friendly gym coach from Pakistan. 
+          STRICT RULES:
+          1. Speak ONLY in a mix of simple Roman Urdu and English (Hinglish/Urdu-ish).
+          2. Use simple words like 'brother', 'koshish', 'behtar', 'exercise'.
+          3. STRICTLY FORBIDDEN: Do not use Hindi words like 'shuddh', 'dhanyavaad', 'prashikshan'. 
+          4. Keep the tone very casual, like a gym bro.
+          5. Max 1-2 short sentences only.` 
         },
         { role: "user", content: message }
       ],
-      model: "llama-3.1-8b-instant", 
+      model: "llama-3.1-8b-instant",
+      temperature: 0.7, // Is se AI zyada "robotic" nahi lagta
+      max_tokens: 100   // Is se reply lamba nahi hoga
     });
     res.json({ reply: completion.choices[0].message.content });
   } catch (error) {
@@ -87,116 +83,161 @@ app.post('/api/chat', async (req, res) => {
 
 
 // Public route for landing page counter
-app.get('/api/public-user-count', (req, res) => {
-    const sql = "SELECT COUNT(*) AS total FROM users";
-    db.query(sql, (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Database error" });
-        }
-        res.json({ count: result[0].total });
-    });
+app.get('/api/public-user-count', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      "SELECT COUNT(*) AS total FROM users"
+    );
+
+    res.json({ count: result[0].total });
+
+  } catch (err) {
+    res.status(500).json({ error: "DB error" });
+  }
 });
 
 
 
 
 
+// --- USER AUTHENTICATION: SIGNUP ---
+app.post("/signup", async (req, res) => {
+  const { name, email, password } = req.body;
 
-//--- USER AUTHENTICATION: SIGNUP ---
-app.post('/signup', (req, res) => {
-    const { name, email, password } = req.body;
-    
-    bcrypt.hash(password, 10, (err, hash) => {
-        if (err) return res.status(500).send("Security error.");
-        
-        const sql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
-        db.query(sql, [name, email, hash, 'user'], (err, result) => {
-            if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    // 400 status bhejein taake frontend error catch kare
-                    return res.status(400).send("Email already registered. Please login.");
-                }
-                return res.status(500).send("Database error.");
-            }
-            
-            req.session.user = { id: result.insertId, name: name, role: 'user' };
-            // Success par 200 status bhejein
-            res.status(200).send("Success");
-        });
-    });
+  try {
+    // 🔐 password hash
+    const hash = await bcrypt.hash(password, 10);
+
+    // 💾 insert user
+    const [result] = await pool.query(
+      "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+      [name, email, hash, "user"]
+    );
+
+    // 🧠 session set
+    req.session.user = {
+      id: result.insertId,
+      name: name,
+      role: "user",
+    };
+
+    res.status(200).send("Success");
+
+  } catch (err) {
+    console.error("SIGNUP ERROR:", err);
+
+    if (err.code === "ER_DUP_ENTRY") {
+      return res
+        .status(400)
+        .send("Email already registered. Please login.");
+    }
+
+    res.status(500).send("Database error.");
+  }
 });
-
-
 
  
 // --- LOGIN ROUTE ---
-app.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    
-    db.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
-        if (err) return res.status(500).send("Database Error");
-        
-        // 401 status code use karein taake frontend catch kar sakay
-        if (results.length === 0) return res.status(401).send("User not found.");
+// --- USER AUTHENTICATION: LOGIN ---
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
 
-        const user = results[0];
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-            if (isMatch) {
-                req.session.user = { 
-                    id: user.id, 
-                    name: user.name, 
-                    role: user.role, 
-                    goal: user.goal 
-                };
+  try {
+    // 🔍 user find karo
+    const [results] = await pool.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
 
-                req.session.save((err) => {
-                    if (err) return res.status(500).send("Session Error");
-                    
-                    console.log("Session saved for user:", req.session.user.name);
-                    
-                    // Yahan res.redirect ki jagah JSON bhejein
-                    res.json({ 
-                        success: true, 
-                        redirectTo: !user.goal ? '/onboarding.html' : '/dashboard.html' 
-                    });
-                });
-            } else {
-                // Wrong password par 401 status
-                res.status(401).send("Wrong password.");
-            }
-        });
-    });
-});
-
-// --- ONBOARDING ---
-app.post('/save-onboarding', (req, res) => {
-    const { goal, diet, height, weight, experience } = req.body;
-    
-    if (!req.session.user) {
-        return res.redirect('/login.html');
+    // ❌ user nahi mila
+    if (results.length === 0) {
+      return res.status(401).send("User not found.");
     }
 
-    const userId = req.session.user.id;
-    const sql = "UPDATE users SET goal = ?, diet_type = ?, experience = ?, height = ?, weight = ? WHERE id = ?";
-    
-    db.query(sql, [goal, diet, experience, height, weight, userId], (err) => {
-        if (err) return res.status(500).send("Error updating fitness profile.");
-        
+    const user = results[0];
+
+    // 🔐 password compare
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).send("Wrong password.");
+    }
+
+    // 🧠 session set
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      goal: user.goal
+    };
+
+    // 💾 session save
+    req.session.save((err) => {
+      if (err) {
+        console.error("SESSION ERROR:", err);
+        return res.status(500).send("Session Error");
+      }
+
+      console.log("Session saved for user:", user.name);
+
+      res.json({
+        success: true,
+        redirectTo: (!user.goal || user.goal === "") 
+  ? "/onboarding.html" 
+  : "/dashboard.html"
+      });
+    });
+
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    res.status(500).send("Database Error");
+  }
+});
+
+
+//onboarding
+app.post('/save-onboarding', async (req, res) => {
+    const { goal, diet, height, weight, experience } = req.body;
+
+    try {
+        // check session
+        if (!req.session.user) {
+            return res.redirect('/login.html');
+        }
+
+        const userId = req.session.user.id;
+
+        // update DB
+        await pool.query(
+            "UPDATE users SET goal = ?, diet_type = ?, experience = ?, height = ?, weight = ? WHERE id = ?",
+            [goal, diet, experience, height, weight, userId]
+        );
+
+        // update session
         req.session.user.goal = goal;
         req.session.user.diet = diet;
-        
+
+        // redirect
         res.redirect('/dashboard.html');
-    });
+
+    } catch (err) {
+        console.error("ONBOARDING ERROR:", err);
+        res.status(500).send("Error updating fitness profile.");
+    }
 });
 
 // --- ADMIN PANEL ---
-app.get('/users', isAdmin, (req, res) => {
-    const sql = "SELECT id, name, email, role, goal, diet_type FROM users";
-    db.query(sql, (err, result) => {
-        if (err) return res.status(500).json({ error: "Failed to retrieve user database." });
-        res.json(result);
-    });
+app.get('/users', isAdmin, async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      "SELECT id, name, email, role, goal, diet_type FROM users"
+    );
+
+    res.json(result);
+
+  } catch (err) {
+    res.status(500).json({ error: "Failed" });
+  }
 });
 
 // --- CURRENT USER ---
@@ -209,40 +250,74 @@ app.get('/api/current-user', (req, res) => {
 });
 
 // --- FITNESS LOGGING ---
-app.post('/fitness-log', (req, res) => {
+app.post("/fitness-log", async (req, res) => {
+  try {
+    // Frontend se 'workout' aa raha hai, usay 'exercise_name' mein map karna hai
     const { user_id, weight, workout } = req.body;
-    const sql = "INSERT INTO fitness_logs (user_id, weight, exercise_name) VALUES (?, ?, ?)";
-    
-    db.query(sql, [user_id, weight, workout], (err, result) => {
-        if (err) return res.status(500).json({ error: "DB Error" });
-        
-        // Blank page ki jagah 200 OK status bhejein
-        res.status(200).json({ message: "Success " });
-    });
-});
 
-app.get('/fitness-data', (req, res) => {
-    if (!req.session.user) return res.status(401).send("Unauthorized access.");
-    
-    const sql = "SELECT weight, date FROM fitness_log WHERE user_id = ? ORDER BY date ASC";
-    db.query(sql, [req.session.user.id], (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.json(result);
-    });
+    console.log("Saving for user:", user_id, "Weight:", weight, "Workout:", workout);
+
+    if (!user_id || !weight) {
+      return res.status(400).json({ error: "Missing data" });
+    }
+
+    await pool.query(
+      "INSERT INTO fitness_logs (user_id, weight, exercise_name, date) VALUES (?, ?, ?, NOW())",
+      [user_id, weight, workout]
+    );
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("DB Error:", err.message);
+    res.status(500).json({ error: "Database Error", details: err.message });
+  }
 });
 
 // --- STATS ---
-app.get('/stats', (req, res) => {
-    db.query("SELECT COUNT(*) AS total FROM users", (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.json(result[0]);
-    });
+app.get("/stats", async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      "SELECT COUNT(*) AS total FROM users"
+    );
+
+    res.json(result[0]);
+
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
+
+
+// --- FITNESS DATA FOR GRAPH ---
+app.get("/fitness-data", async (req, res) => {
+  try {
+    // Always use session user ID for security
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const [logs] = await pool.query(
+      "SELECT weight, date FROM fitness_logs WHERE user_id = ? ORDER BY date ASC",
+      [userId]
+    );
+
+    res.json(logs);
+  } catch (err) {
+    console.error("Fitness data error:", err.message);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+
 
 // --- LOGOUT ---
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
-        res.clearCookie('connect.sid');
+    res.clearCookie('connect.sid', {
+     path: '/'
+    });
         res.redirect('/login.html');
     });
 });
@@ -251,111 +326,82 @@ app.get('/logout', (req, res) => {
 const { Parser } = require('json2csv'); // Top par add karein
 
 // --- EXPORT USERS TO CSV ---
-app.get('/export-users', isAdmin, (req, res) => {
-    const sql = "SELECT id, name, email, role FROM users";
-    
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("Database Error during export.");
-        }
+app.get('/export-users', isAdmin, async (req, res) => {
+  try {
+    const [results] = await pool.query(
+      "SELECT id, name, email, role FROM users"
+    );
 
-        try {
-            const fields = ['id', 'name', 'email', 'role'];
-            const opts = { fields };
-            const parser = new Parser(opts);
-            const csv = parser.parse(results);
+    const fields = ['id', 'name', 'email', 'role'];
+    const parser = new Parser({ fields });
+    const csv = parser.parse(results);
 
-            // Browser ko batana ke yeh file download karni hai
-            res.header('Content-Type', 'text/csv');
-            res.attachment('GymAI_Users_Report.csv');
-            return res.send(csv);
-        } catch (err) {
-            console.error(err);
-            res.status(500).send("Cannot export CSV");
-        }
-    });
+    res.header('Content-Type', 'text/csv');
+    res.attachment('GymAI_Users_Report.csv');
+    res.send(csv);
+
+  } catch (err) {
+    res.status(500).send("Database Error");
+  }
 });
 
 
 // --- DELETE USER ROUTE ---
-app.get('/delete/:id', isAdmin, (req, res) => {
-    const userId = req.params.id;
+app.get('/delete/:id', isAdmin, async (req, res) => {
+  try {
+    await pool.query(
+      "DELETE FROM users WHERE id = ?",
+      [req.params.id]
+    );
 
-    // Database se user delete karne ki query
-    const sql = "DELETE FROM users WHERE id = ?";
-    
-    db.query(sql, [userId], (err, result) => {
-        if (err) {
-            console.error("Error deleting user:", err);
-            return res.status(500).send("User delete karne mein masla hua.");
-        }
-        
-        console.log(`User with ID ${userId} deleted by Admin.`);
-        
-        // Delete hone ke baad wapis admin panel par bhej dein
-        res.redirect('/admin.html');
-    });
+    res.redirect('/admin.html');
+
+  } catch (err) {
+    res.status(500).send("Delete error");
+  }
 });
 
 // --- 1. Edit Form ke liye User ka purana data mangwana ---
 // --- USER MANAGEMENT (EDIT & UPDATE) ---
 
 // 1. Get User Data for Edit Form
-app.get('/user/:id', (req, res) => {
-    const userId = req.params.id;
-    // Note: Agar error aaye toh temporarily yahan se 'isAdmin' hata kar check karein
-    const sql = "SELECT id, name, email, phone, role FROM users WHERE id = ?";
-    
-    db.query(sql, [userId], (err, result) => {
-        if (err) {
-            console.error("❌ DB Error:", err);
-            return res.status(500).json({ error: "Database error" });
-        }
-        if (result.length === 0) {
-            return res.status(404).json({ error: "User not found" });
-        }
-        res.json(result[0]); 
-    });
+app.get('/user/:id', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      "SELECT id, name, email, phone, role FROM users WHERE id = ?",
+      [req.params.id]
+    );
+
+    if (!result.length) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(result[0]);
+
+  } catch (err) {
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // 2. Update User Data
-app.post('/update/:id', (req, res) => {
-    const userId = req.params.id;
+app.post('/update/:id', isAdmin, async (req, res) => {
+  try {
     const { name, email, phone, role } = req.body;
 
-    const sql = "UPDATE users SET name = ?, email = ?, phone = ?, role = ? WHERE id = ?";
-    
-    db.query(sql, [name, email, phone, role, userId], (err, result) => {
-        if (err) {
-            console.error("❌ Update Error:", err);
-            return res.status(500).send("Update fail ho gaya.");
-        }
-        
-        console.log(`✅ User ID ${userId} updated successfully!`);
-        res.redirect('/admin.html'); 
-    });
+    await pool.query(
+      "UPDATE users SET name=?, email=?, phone=?, role=? WHERE id=?",
+      [name, email, phone, role, req.params.id]
+    );
+
+    res.redirect('/admin.html');
+
+  } catch (err) {
+    res.status(500).send("Update failed");
+  }
 });
 
-// --- 2. Form submit hone par data update karna ---
-app.post('/update/:id', isAdmin, (req, res) => {
-    const userId = req.params.id;
-    const { name, email, phone, role } = req.body;
-
-    const sql = "UPDATE users SET name = ?, email = ?, phone = ?, role = ? WHERE id = ?";
-    
-    db.query(sql, [name, email, phone, role, userId], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("Update fail ho gaya.");
-        }
-        
-        // Update ke baad wapis Admin Panel par bhej dein
-        res.redirect('/admin.html');
-    });
-});
-
-const PORT = 3000;
-app.listen(PORT, () => {
-console.log(`GymAI Server running at https://gymai-ten.vercel.app`);
+const PORT = process.env.PORT || 3000; // Yeh Vercel ke liye zaroori hai
+// app.listen(PORT, () => {
+app.listen(process.env.PORT || 3000, () => {
+  console.log("GymAI Server running...");
 });

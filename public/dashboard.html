@@ -27,6 +27,10 @@
         button, .btn { padding: 10px 15px; background: #22c55e; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
         input { padding: 10px; margin: 5px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 5px; }
 
+             #weightChart {
+    max-height: 300px;
+    width: 100%;
+}
         #calendar button { background: #334155; transition: 0.3s; width: 50px; }
         #calendar button:hover { background: #22c55e; }
         .active-day { background: #22c55e !important; box-shadow: 0 0 10px #22c55e; }
@@ -126,7 +130,8 @@
 
     <script>
         // ---------------- DATA ----------------
-        const fitnessData = {
+             let myChart;   // 👈 MUST be declared before loadGraph() uses it
+            const fitnessData = {
             "Mon": { workout: "Chest & Triceps", diet: "Oatmeal + 4 Egg Whites", cal: "1900 kcal" },
             "Tue": { workout: "Back & Biceps", diet: "Chicken, Rice & Broccoli", cal: "2100 kcal" },
             "Wed": { workout: "Legs & Abs Training", diet: "Greek Yogurt & Fruit Mix", cal: "1850 kcal" },
@@ -157,28 +162,43 @@
             });
 
         // ---------------- GRAPH LOGIC ----------------
-        function loadGraph() {
-            fetch('/fitness-data')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.length === 0) return;
-                    const ctx = document.getElementById("weightChart").getContext("2d");
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.map(d => d.date.split('T')[0]),
-                            datasets: [{ 
-                                label: 'Weight (kg)', 
-                                data: data.map(d => d.weight), 
-                                borderColor: '#22c55e', 
-                                tension: 0.3, 
-                                fill: true, 
-                                backgroundColor: 'rgba(34, 197, 94, 0.1)' 
-                            }]
-                        }
-                    });
+       // 2. FIXED GRAPH LOGIC (Refreshable)
+    function loadGraph() {
+        fetch('/fitness-data')
+            .then(res => res.json())
+            .then(data => {
+                if (!data || data.length === 0) return;
+                const ctx = document.getElementById("weightChart").getContext("2d");
+                
+                if (myChart) myChart.destroy(); // Purana graph khatam taake naya load ho
+
+                myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => d.date.split('T')[0]),
+                        datasets: [{ 
+                            label: 'Weight (kg)', 
+                            data: data.map(d => d.weight), 
+                            borderColor: '#22c55e', 
+                            tension: 0.3, 
+                            fill: true, 
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)' 
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
                 });
-        }
+            });
+    }
+
+
+
+
+   
+
+
+
+
+
 
         // ---------------- CALENDAR & STATS ----------------
         const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
