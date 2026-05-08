@@ -1,10 +1,4 @@
-body {
-  margin: 0;
-  font-family: Arial;
-  text-align: center;
-  background: #111;
-  color: white;
-}
+
 
 nav {
   background: black;
@@ -28,23 +22,27 @@ button {
   cursor: pointer;
 }
 
+/* style.css mein isay replace karein */
+.card {
+  background: #1a1a1a;
+  padding: 30px;
+  width: 100%; /* Fix 480px hata kar 100% karein */
+  max-width: 350px; /* Max width limit rakhein */
+  border-radius: 20px;
+  border: 1px solid #333;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
 .plans {
   display: flex;
   justify-content: center;
-  gap: 30px; /* Thora gap barha dein */
+  gap: 20px;
   margin: 50px auto;
-  flex-wrap: wrap; /* Taake screen choti hone par bikhre nahi */
-}
-
-.card {
-  background: #1a1a1a; /* Thora dark */
-  padding: 30px;
-  width: 480px; /* Width barha di taake text fit aaye */
-  border-radius: 20px;
-  border: 1px solid #333;
-  text-align: left; /* Text alignment behtar karein */
-}
-
+  flex-wrap: wrap; /* Yeh boxes ko overlap hone se bachayega */
+  max-width: 1200px;
+} 
 
 
 button {
@@ -123,13 +121,26 @@ button { padding:10px; background:#22c55e; border:none; }
 .big-pic-box {
     position: relative;
     flex: 1;
+    min-width: 300px; /* Mobile par width manage karne ke liye */
     max-width: 550px;
-    height: 650px;
+    height: 500px; /* 650px se kam karke 500px karein */
     background: #111;
     border-radius: 30px;
     overflow: hidden;
     border: 3px solid #333;
     transition: 0.4s ease-in-out;
+}
+
+/* Transformation images ko mobile par aik ke neechay aik laane ke liye */
+@media (max-width: 768px) {
+    .large-image-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+    .big-pic-box {
+        width: 100%;
+        height: 400px;
+    }
 }
 
 .big-pic-box:hover { 
