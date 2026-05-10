@@ -1,329 +1,1102 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Dashboard | Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ATHENIX | Gym Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Arial; background: #0f172a; color: white; margin: 0; display: flex; }
-        
-        /* Compact Sidebar */
-        .sidebar { width: 80px; background: #1e293b; height: 100vh; position: fixed; display: flex; flex-direction: column; align-items: center; padding-top: 20px; border-right: 1px solid #334155; transition: width 0.3s; overflow: hidden; z-index: 10; }
-        .sidebar:hover { width: 200px; }
-        .sidebar a { color: #94a3b8; text-decoration: none; margin: 20px 0; display: flex; align-items: center; width: 100%; padding-left: 25px; gap: 20px; }
-        .sidebar a:hover { color: #22c55e; }
-        .sidebar i { font-size: 20px; }
-        .sidebar span { display: none; white-space: nowrap; }
-        .sidebar:hover span { display: inline; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+        }
 
-        /* Main Content */
-        .main-content { margin-left: 80px; padding: 30px; width: 100%; transition: margin-left 0.3s; }
-        .sidebar:hover + .main-content { margin-left: 200px; }
+        body {
+            background: #0a0f1c;
+            color: #eef2ff;
+            display: flex;
+            min-height: 100vh;
+        }
 
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-        
-        button, .btn { padding: 10px 15px; background: #22c55e; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
-        input { padding: 10px; margin: 5px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 5px; }
+        /* ========= SIDEBAR ========= */
+        .sidebar {
+            width: 80px;
+            background: #111827;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0 20px 0;
+            border-right: 1px solid #1f2937;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            z-index: 100;
+        }
 
-             #weightChart {
-    max-height: 300px;
-    width: 100%;
-}
-        #calendar button { background: #334155; transition: 0.3s; width: 50px; }
-        #calendar button:hover { background: #22c55e; }
-        .active-day { background: #22c55e !important; box-shadow: 0 0 10px #22c55e; }
-        
-        .calorie-badge { background: rgba(34, 197, 94, 0.2); color: #22c55e; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.9em; }
+        .sidebar:hover {
+            width: 220px;
+        }
 
-        /* Typing Animation Style */
-        .typing-indicator { font-style: italic; color: #94a3b8; font-size: 0.85em; align-self: flex-start; margin-bottom: 5px; }
+        .sidebar a {
+            color: #9ca3af;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            padding: 12px 20px;
+            margin: 4px 0;
+            border-radius: 12px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .sidebar a i {
+            font-size: 1.3rem;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .sidebar a span {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .sidebar:hover a span {
+            opacity: 1;
+        }
+
+        .sidebar a:hover {
+            background: #1f2937;
+            color: #22c55e;
+        }
+
+        .logout-item {
+            margin-top: auto;
+            color: #ef4444 !important;
+        }
+
+        /* ========= MAIN CONTENT ========= */
+        .main-content {
+            margin-left: 80px;
+            flex: 1;
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        /* Top Header */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+            background: #111827;
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 1px solid #1f2937;
+        }
+
+        .welcome-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #86efac);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .streak-badge {
+            background: #22c55e;
+            color: #0a0f1c;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .edit-btn {
+            background: #1f2937;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .edit-btn:hover {
+            background: #22c55e;
+            color: #0a0f1c;
+        }
+
+        /* Cards */
+        .card {
+            background: #111827;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #1f2937;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            border-color: #22c55e;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid #22c55e;
+            padding-left: 16px;
+        }
+
+        /* Grid Layout */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        /* Workout Items */
+        .workout-item {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #374151;
+        }
+
+        .workout-item.completed {
+            background: rgba(34, 197, 94, 0.12);
+            border-left-color: #22c55e;
+        }
+
+        .complete-btn {
+            background: #374151;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .complete-btn:hover {
+            background: #22c55e;
+            color: #0a0f1c;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: #0f172a;
+            border-radius: 30px;
+            height: 8px;
+            margin: 16px 0 8px;
+        }
+
+        .progress-fill {
+            background: #22c55e;
+            height: 100%;
+            border-radius: 30px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Week Grid */
+        .week-grid {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 8px 0;
+        }
+
+        .day-card {
+            min-width: 100px;
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid #1f2937;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .day-card.today {
+            border-color: #22c55e;
+            background: #1a2a3a;
+        }
+
+        .day-card.completed {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .day-card h4 {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .day-card p {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .calendar-day {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #1f2937;
+        }
+        .calendar-day:hover {
+            border-color: #22c55e;
+        }
+        .calendar-day.workout-complete {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+        }
+        .calendar-day.today-cal {
+            border: 2px solid #22c55e;
+            background: #1a2a3a;
+        }
+        .calendar-weekday {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+            padding: 8px;
+        }
+        .calendar-day-number {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .calendar-day-status {
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        /* Analytics Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #0f172a;
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #22c55e;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 6px;
+        }
+
+        /* Form Inputs */
+        input {
+            background: #0f172a;
+            border: 1px solid #1f2937;
+            padding: 12px 16px;
+            border-radius: 30px;
+            color: white;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        .submit-btn {
+            background: #22c55e;
+            color: #0a0f1c;
+            padding: 12px;
+            border-radius: 30px;
+            font-weight: 600;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+        }
+
+        #weightChart, #analyticsChart {
+            max-height: 200px;
+            width: 100%;
+        }
+
+        /* Timer Styles */
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            font-family: monospace;
+            letter-spacing: 4px;
+            margin: 15px 0;
+        }
+        .timer-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .timer-btn {
+            background: #1f2937;
+            padding: 10px 20px;
+            border-radius: 40px;
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .timer-btn.start {
+            background: #22c55e;
+            color: #0a0f1c;
+        }
+        .timer-btn.reset {
+            background: #ef4444;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #1f2937;
+            border-radius: 16px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+        .save-notes-btn {
+            background: #22c55e;
+            color: #0a0f1c;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Chat Side Tab - Expanded */
+        .chat-side-tab {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #22c55e;
+            padding: 16px 10px;
+            border-radius: 28px 0 0 28px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-side-tab i {
+            font-size: 28px;
+            color: #0a0f1c;
+        }
+        .chat-side-tab span {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0a0f1c;
+            writing-mode: vertical-rl;
+            letter-spacing: 2px;
+        }
+
+        /* Chat Window - Bigger */
+        .chat-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 450px;
+            height: 650px;
+            background: #111827;
+            border-radius: 28px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1001;
+            border: 1px solid #22c55e;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .chat-header {
+            background: #1f2937;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quick-suggestions {
+            padding: 12px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            background: #0f172a;
+            border-bottom: 1px solid #1f2937;
+        }
+        .suggestion-chip {
+            background: #1f2937;
+            border: 1px solid #374151;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            white-space: nowrap;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .suggestion-chip:hover {
+            background: #22c55e;
+            color: #0a0f1c;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-size: 13px;
+        }
+        .user-msg {
+            background: #22c55e;
+            color: #0a0f1c;
+            align-self: flex-end;
+        }
+        .bot-msg {
+            background: #1f2937;
+            color: white;
+            align-self: flex-start;
+        }
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: #1f2937;
+            padding: 10px 16px;
+            border-radius: 20px;
+            width: fit-content;
+            margin: 8px 0;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: typingAnim 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingAnim {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+        .chat-input-area {
+            padding: 12px;
+            background: #0f172a;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #1f2937;
+        }
+        .chat-input-area input {
+            margin: 0;
+            flex: 1;
+        }
+        .send-btn {
+            background: #22c55e;
+            border: none;
+            width: 44px;
+            border-radius: 30px;
+            color: #0a0f1c;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 65px; }
+            .main-content { margin-left: 65px; padding: 16px; }
+            .chat-window { width: 92vw; right: 4vw; height: 65vh; }
+            .calendar-grid { gap: 4px; }
+            .calendar-day { padding: 6px 2px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <a href="javascript:void(0)" onclick="window.location.href='index.html'"><i class="fas fa-home"></i> <span>Home</span></a>
-        <a href="#" onclick="showSection('workouts')"><i class="fas fa-dumbbell"></i> <span>My Workouts</span></a>
-        <a href="#" onclick="showSection('diet')"><i class="fas fa-apple-alt"></i> <span>Diet Plan</span></a>
-        <a href="/admin.html" id="adminBtn" style="display:none;"><i class="fas fa-user-shield"></i> <span>Admin Panel</span></a>
-        <a href="/logout" style="margin-top: auto; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
-    </div>
-
-    <div class="main-content">
-        <h1 id="welcomeText">💪 Gym Dashboard</h1>
-
-        <div class="grid-container">
-            <!-- STATS -->
-            <div class="card">
-                <h2 id="totalUsers">...</h2>
-                <p>Community Members</p>
-            </div>
-
-            <!-- TRACKING FORM -->
-            <!-- TRACKING FORM (FIXED) -->
-        <div class="card">
-             <h3>🏋️ Log Session</h3>
-                <form id="logSessionForm"> <!-- action aur method hata diye -->
-                 <input type="hidden" name="user_id" id="fitnessUserId">
-                 <input type="number" name="weight" placeholder="Weight (kg)" required>
-                 <input type="text" name="workout" placeholder="Exercise Name" required>
-             <button type="submit" class="btn">Save</button>
-    </form>
+<!-- Sidebar -->
+<div class="sidebar">
+    <a href="javascript:void(0)" onclick="window.location.href='index.html'"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="#" onclick="showSection('workouts')"><i class="fas fa-dumbbell"></i><span>Workout</span></a>
+    <a href="#" onclick="showSection('progress')"><i class="fas fa-chart-line"></i><span>Progress</span></a>
+    <a href="/admin.html" id="adminBtn" style="display:none;"><i class="fas fa-user-shield"></i><span>Admin</span></a>
+    <a href="/onboarding.html?edit=true"><i class="fas fa-sliders-h"></i><span>Edit</span></a>
+    <a href="/logout" class="logout-item"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
 </div>
-        </div>
 
-        <!-- SMART DAY PLANNER -->
-        <div class="card" style="margin-top: 20px; border-left: 5px solid #22c55e;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 id="planDayTitle">Today's Focus</h3>
-                <span class="calorie-badge" id="planCalories">0 kcal</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                    <p style="color: #94a3b8; margin: 0; font-size: 0.8em;">WORKOUT</p>
-                    <b id="planWorkoutText">Rest Day</b>
-                </div>
-                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                    <p style="color: #94a3b8; margin: 0; font-size: 0.8em;">DIET PLAN</p>
-                    <b id="planDietText">Balanced Meal</b>
-                </div>
-            </div>
-        </div>
-
-        <!-- PROGRESS SECTION -->
-        <div class="grid-container" style="margin-top: 20px;">
-            <div class="card" style="grid-column: span 2;">
-                <h3>📈 Weight Progress</h3>
-                <canvas id="weightChart" height="100"></canvas>
-            </div>
-        </div>
-
-        <!-- WEEKLY CALENDAR -->
-        <div class="card" style="margin-top: 20px;">
-            <h3>📅 Weekly Workout Schedule</h3>
-            <div id="calendar"></div>
-            <div id="dayDetails" style="margin-top: 15px; padding: 15px; background: #0f172a; border-radius: 8px;">
-                Click a day to see your workout plan.
-            </div>
-        </div>
-
-        <!-- EXTRA SECTIONS -->
-        <div id="extraContent" class="card" style="margin-top: 20px; display: none;">
-            <h3 id="extraTitle"></h3>
-            <div id="extraBody"></div>
+<!-- Main Content -->
+<div class="main-content">
+    <div class="top-header">
+        <h1 class="welcome-text" id="welcomeText">💪 Gym Dashboard</h1>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button class="edit-btn" onclick="window.location.href='/onboarding.html?edit=true'"><i class="fas fa-user-edit"></i> Edit Profile</button>
+            <div id="streakDisplay" class="streak-badge">🔥 0 Day Streak</div>
         </div>
     </div>
 
-    <!-- AI CHATBOT -->
-    <div id="chatToggle" style="position:fixed; bottom:20px; right:20px; background:#22c55e; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:30px; z-index: 100;">💬</div>
-    <div id="chatWindow" style="position:fixed; bottom:90px; right:20px; width:350px; height:450px; background:#1e293b; border-radius:15px; display:none; flex-direction:column; border:1px solid #334155; overflow:hidden; z-index: 100;">
-        <div style="background:#22c55e; padding:15px; font-weight:bold;">GymAI Coach</div>
-        <div id="chatMessages" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;"></div>
-        <div style="padding:10px; display:flex; gap:5px; background:#0f172a;">
-            <input type="text" id="chatInput" placeholder="Ask AI Coach..." style="flex:1; margin:0;">
-            <button onclick="sendMessage()" style="margin:0;">Send</button>
+    <!-- Today's Workout -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-calendar-day"></i> Today's Workout</div>
+        <div id="todayWorkoutContainer">Loading...</div>
+        <div class="progress-container"><div id="todayProgressFill" class="progress-fill"></div></div>
+    </div>
+
+    <!-- Weekly Plan -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-calendar-week"></i> This Week's Plan</div>
+        <div id="weeklyWorkoutContainer" class="week-grid"></div>
+    </div>
+
+    <!-- Monthly Calendar View -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-calendar-alt"></i> Monthly Calendar</div>
+        <div id="monthlyCalendar"></div>
+    </div>
+
+    <!-- Workout Analytics Dashboard -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-chart-pie"></i> Workout Analytics</div>
+        <div class="stats-grid" id="analyticsStats">
+            <div class="stat-card"><div class="stat-value" id="totalWorkouts">0</div><div class="stat-label">Total Workouts</div></div>
+            <div class="stat-card"><div class="stat-value" id="completionRate">0%</div><div class="stat-label">Completion Rate</div></div>
+            <div class="stat-card"><div class="stat-value" id="bestStreak">0</div><div class="stat-label">Best Streak</div></div>
+            <div class="stat-card"><div class="stat-value" id="monthlyTotal">0</div><div class="stat-label">This Month</div></div>
+        </div>
+        <canvas id="analyticsChart" height="160" style="max-height: 160px;"></canvas>
+    </div>
+
+    <!-- Log Session + Weight Chart -->
+    <div class="grid-2col">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-dumbbell"></i> Log Session</div>
+            <form id="logSessionForm">
+                <input type="hidden" name="user_id" id="fitnessUserId">
+                <input type="number" name="weight" placeholder="Weight (kg)" required>
+                <input type="text" name="workout" placeholder="Exercise Name" required>
+                <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Save Session</button>
+            </form>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-chart-line"></i> Weight Progress</div>
+            <canvas id="weightChart" height="180" style="max-height: 180px;"></canvas>
         </div>
     </div>
 
-    <script>
-        // ---------------- DATA ----------------
-             let myChart;   // 👈 MUST be declared before loadGraph() uses it
-            const fitnessData = {
-            "Mon": { workout: "Chest & Triceps", diet: "Oatmeal + 4 Egg Whites", cal: "1900 kcal" },
-            "Tue": { workout: "Back & Biceps", diet: "Chicken, Rice & Broccoli", cal: "2100 kcal" },
-            "Wed": { workout: "Legs & Abs Training", diet: "Greek Yogurt & Fruit Mix", cal: "1850 kcal" },
-            "Thu": { workout: "Shoulders & Cardio", diet: "Baked Fish & Quinoa", cal: "1750 kcal" },
-            "Fri": { workout: "Full Body Blast", diet: "Beef Steak & Sweet Potato", cal: "2200 kcal" },
-            "Sat": { workout: "Active Stretching", diet: "Smoothie Bowl & Nuts", cal: "1600 kcal" },
-            "Sun": { workout: "Rest & Recovery", diet: "High Protein Salad", cal: "2000 kcal" }
-        };
+    <!-- Timer + Notes -->
+    <div class="grid-2col">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-stopwatch"></i> Workout Timer</div>
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="timer-buttons">
+                <button class="timer-btn start" onclick="startTimer()"><i class="fas fa-play"></i> Start</button>
+                <button class="timer-btn" onclick="pauseTimer()"><i class="fas fa-pause"></i> Pause</button>
+                <button class="timer-btn reset" onclick="resetTimer()"><i class="fas fa-redo"></i> Reset</button>
+            </div>
+            <p style="font-size: 12px; color: #9ca3af; margin-top: 12px; text-align: center;">⏱️ Rest between sets</p>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-pencil-alt"></i> Workout Journal</div>
+            <textarea id="workoutNotes" class="notes-textarea" rows="3" placeholder="How was your workout? Write notes here..."></textarea>
+            <button class="save-notes-btn" onclick="saveNotes()"><i class="fas fa-save"></i> Save Notes</button>
+            <p id="noteStatus" style="font-size: 11px; color: #22c55e; margin-top: 8px;"></p>
+        </div>
+    </div>
 
-        // ---------------- AUTH & SESSION CHECK ----------------
-        // Session se data fetch karke admin check aur UI update karna
-        fetch('/api/current-user')
-            .then(res => res.json())
-            .then(user => {
-                if (user.id) {
-                    document.getElementById('fitnessUserId').value = user.id;
-                    document.getElementById('welcomeText').innerText = `💪 Welcome, ${user.name}`;
-                    
-                    // ADMIN PANEL VISIBILITY FIX
-                    if (user.role === 'admin') {
-                        document.getElementById('adminBtn').style.display = 'flex';
-                    }
-                    
-                    loadGraph();
-                } else {
-                    window.location.href = "/login.html"; // Session nahi hai to redirect
-                }
-            });
+    <div id="extraContent" class="card" style="display: none;">
+        <h3 id="extraTitle"></h3>
+        <div id="extraBody"></div>
+    </div>
+</div>
 
-        // ---------------- GRAPH LOGIC ----------------
-       // 2. FIXED GRAPH LOGIC (Refreshable)
-    function loadGraph() {
-        fetch('/fitness-data')
-            .then(res => res.json())
-            .then(data => {
-                if (!data || data.length === 0) return;
-                const ctx = document.getElementById("weightChart").getContext("2d");
-                
-                if (myChart) myChart.destroy(); // Purana graph khatam taake naya load ho
+<!-- Chat Side Tab -->
+<div class="chat-side-tab" onclick="toggleChat()">
+    <i class="fas fa-robot"></i>
+    <span>AI Coach</span>
+</div>
 
-                myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.map(d => d.date.split('T')[0]),
-                        datasets: [{ 
-                            label: 'Weight (kg)', 
-                            data: data.map(d => d.weight), 
-                            borderColor: '#22c55e', 
-                            tension: 0.3, 
-                            fill: true, 
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)' 
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            });
+<!-- Chat Window - Expanded -->
+<div id="chatWindow" class="chat-window">
+    <div class="chat-header">
+        <span><i class="fas fa-robot"></i> <strong>GymAI Coach</strong></span>
+        <i class="fas fa-times" onclick="closeChat()" style="cursor: pointer;"></i>
+    </div>
+    <div class="quick-suggestions">
+        <button class="suggestion-chip" onclick="sendQuickMessage('Today\'s workout?')"><i class="fas fa-dumbbell"></i> Today's Workout</button>
+        <button class="suggestion-chip" onclick="sendQuickMessage('Diet suggestion?')"><i class="fas fa-utensils"></i> Diet Plan</button>
+        <button class="suggestion-chip" onclick="sendQuickMessage('Motivation!')"><i class="fas fa-fire"></i> Motivation</button>
+        <button class="suggestion-chip" onclick="sendQuickMessage('My streak?')"><i class="fas fa-calendar-check"></i> My Streak</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="message bot-msg">🤖 Salam brother! I'm your AI coach. Ask me anything about fitness, workouts, or diet!</div>
+    </div>
+    <div class="typing-indicator" id="typingIndicator">
+        <span></span><span></span><span></span>
+        <span style="margin-left: 8px; font-size: 12px;">GymAI is typing...</span>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+    let myChart = null;
+    let analyticsChart = null;
+    let currentUserGoal = null;
+    let workoutCompletions = {};
+    let currentStreak = 0;
+    let userId = null;
+    let allWorkoutHistory = [];
+    
+    // Timer variables
+    let timerSeconds = 0;
+    let timerInterval = null;
+    
+    // Workout Database
+    const workoutDB = {
+        weight_loss: { name: "🔥 Fat Burn", exercises: { "Mon":["Jumping Jacks - 3x30","Burpees - 3x15","Mountain Climbers - 3x20"], "Tue":["Squats - 4x15","Lunges - 4x12","Leg Raises - 3x15"], "Wed":["Push-ups - 3x12","Diamond Push-ups - 3x10","Plank - 3x30s"], "Thu":["Running - 20 min","Cycling - 20 min","Jump Rope - 10 min"], "Fri":["Deadlifts - 4x10","Rows - 4x12","Face Pulls - 3x15"], "Sat":["HIIT Circuit - 30 min","Kettlebell Swings - 4x15"], "Sun":["Active Recovery","Stretching - 15 min"] } },
+        muscle_gain: { name: "💪 Muscle Build", exercises: { "Mon":["Bench Press - 4x8","Incline DB Press - 4x10","Tricep Pushdown - 3x12"], "Tue":["Deadlifts - 4x6","Pull-ups - 4x8","Barbell Rows - 4x10"], "Wed":["Squats - 4x8","Leg Press - 4x10","Calf Raises - 4x15"], "Thu":["Overhead Press - 4x8","Lateral Raises - 4x12","Shrugs - 4x12"], "Fri":["Barbell Curls - 4x10","Hammer Curls - 3x12","Skull Crushers - 4x10"], "Sat":["Full Body Circuit","Weighted Lunges - 4x10"], "Sun":["Rest & Recovery","Light Cardio - 20 min"] } },
+        endurance: { name: "🏃 Endurance", exercises: { "Mon":["Long Run - 5km","Pace Training - 30 min"], "Tue":["Swimming - 30 min","Cycling - 20km"], "Wed":["Interval Running - 8x400m","Core Work"], "Thu":["Rowing - 30 min","Bodyweight Circuit"], "Fri":["Tempo Run - 45 min","Strength Maintenance"], "Sat":["Long Run - 8km","Active Recovery"], "Sun":["Rest Day","Light Stretching"] } },
+        strength: { name: "🏋️ Strength", exercises: { "Mon":["Squats - 5x5","Bench Press - 5x5","Barbell Rows - 5x5"], "Tue":["Deadlifts - 5x3","Overhead Press - 5x5","Pull-ups - 5x5"], "Wed":["Rest / Active Recovery"], "Thu":["Front Squats - 5x5","Incline Bench - 5x5","Pendlay Rows - 5x5"], "Fri":["Power Cleans - 5x3","Push Press - 5x5","Weighted Pull-ups - 5x5"], "Sat":["Accessory Work","Core Strength"], "Sun":["Full Rest"] } },
+        toning: { name: "✨ Toning", exercises: { "Mon":["Circuit Training - 4 rounds","Jump Squats","Push-ups"], "Tue":["Pilates - 45 min","Core Focus","Glute Bridges - 4x15"], "Wed":["HIIT Cardio + Abs","Russian Twists","Leg Raises"], "Thu":["Full Body Resistance","Band Work","Light Weights High Reps"], "Fri":["Yoga Flow - 45 min","Balance Work"], "Sat":["Active Cardio","Walking/Jogging"], "Sun":["Rest Day - Light Walk"] } },
+        health_improve: { name: "❤️ Health Boost", exercises: { "Mon":["Brisk Walking - 30 min","Light Stretching"], "Tue":["Bodyweight Squats - 3x12","Wall Push-ups - 3x10"], "Wed":["Walking - 40 min","Deep Breathing"], "Thu":["Seated Leg Lifts - 3x12","Arm Circles"], "Fri":["Yoga for beginners - 30 min"], "Sat":["Light Jogging - 20 min","Balance Exercises"], "Sun":["Rest & Meditation"] } }
+    };
+
+    const daysOfWeek = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    const today = daysOfWeek[todayIndex];
+    function getTodayDate() {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+    // Notes Functions
+    function saveNotes() {
+        const notes = document.getElementById('workoutNotes').value;
+        localStorage.setItem('workoutNotes_' + getTodayDate(), notes);
+        document.getElementById('noteStatus').innerText = '✓ Notes saved!';
+        setTimeout(() => { document.getElementById('noteStatus').innerText = ''; }, 2000);
+    }
+    
+    function loadNotes() {
+        const saved = localStorage.getItem('workoutNotes_' + getTodayDate());
+        if(saved) document.getElementById('workoutNotes').value = saved;
+    }
+    
+    // Timer Functions
+    function updateTimerDisplay() {
+        const mins = Math.floor(timerSeconds / 60);
+        const secs = timerSeconds % 60;
+        document.getElementById('timerDisplay').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+    function startTimer() { if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timerSeconds++; updateTimerDisplay(); }, 1000); }
+    function pauseTimer() { if(timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+    function resetTimer() { pauseTimer(); timerSeconds = 0; updateTimerDisplay(); }
+
+    // Load User Data
+    async function loadUserData() {
+        try {
+            const userRes = await fetch('/api/current-user');
+            const user = await userRes.json();
+            if (!user.id) { window.location.href = '/login.html'; return; }
+            userId = user.id;
+            document.getElementById('fitnessUserId').value = userId;
+            document.getElementById('welcomeText').innerHTML = `💪 Welcome, ${user.name}`;
+            if (user.role === 'admin') document.getElementById('adminBtn').style.display = 'flex';
+            const profileRes = await fetch('/api/user-profile');
+            const profile = await profileRes.json();
+            if (!profile || !profile.fitness_goal) { window.location.href = '/onboarding.html'; return; }
+            currentUserGoal = profile.fitness_goal;
+            await loadCompletions();
+            await loadStreak();
+            generateWorkoutPlan();
+            loadGraph();
+            loadNotes();
+            renderMonthlyCalendar();
+            updateAnalytics();
+        } catch(e) { window.location.href = '/login.html'; }
     }
 
-
-
-
-   
-
-
-
-
-
-
-        // ---------------- CALENDAR & STATS ----------------
-        const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-        document.getElementById("calendar").innerHTML = days.map(d => `<button id="btn-${d}" onclick="loadDay('${d}', this)">${d}</button>`).join('');
-
-        function loadDay(day, btn) {
-            document.querySelectorAll('#calendar button').forEach(b => b.classList.remove('active-day'));
-            if(btn) btn.classList.add('active-day');
-            const plan = fitnessData[day];
-            document.getElementById("dayDetails").innerHTML = `<h4>${day} Routine:</h4><p>🏋️ <b>Workout:</b> ${plan.workout}</p><p>🥗 <b>Diet:</b> ${plan.diet}</p><p>🔥 <b>Target:</b> ${plan.cal}</p>`;
-        }
-
-        function setToday() {
-            const shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-            const today = shortDays[new Date().getDay()];
-            document.getElementById('planDayTitle').innerText = today + "'s Focus";
-            document.getElementById('planWorkoutText').innerText = fitnessData[today]?.workout || "Rest";
-            document.getElementById('planDietText').innerText = fitnessData[today]?.diet || "Healthy Food";
-            document.getElementById('planCalories').innerText = fitnessData[today]?.cal || "0 kcal";
-            const todayBtn = document.getElementById('btn-' + today);
-            if(todayBtn) loadDay(today, todayBtn);
-        }
-
-        fetch('/stats').then(res => res.json()).then(data => { document.getElementById("totalUsers").innerText = data.total; });
-
-        function showSection(type) {
-            const extra = document.getElementById('extraContent');
-            const title = document.getElementById('extraTitle');
-            const body = document.getElementById('extraBody');
-            extra.style.display = 'block';
-            const today = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date().getDay()];
-            if(type === 'workouts') {
-                title.innerText = "🏋️ My Exercises";
-                body.innerHTML = `<ul><li>Current Plan: ${fitnessData[today].workout}</li><li>Intensity: High</li><li>Duration: 45-60 mins</li></ul>`;
-            } else {
-                title.innerText = "🥗 Personalized Diet Plan";
-                body.innerHTML = `<p><b>Today's Meal:</b> ${fitnessData[today].diet}</p><p><b>Calories:</b> ${fitnessData[today].cal}</p>`;
-            }
-            extra.scrollIntoView({behavior: 'smooth'});
-        }
-
-        // ---------------- CHAT LOGIC (FIXED) ----------------
-        const chatWindow = document.getElementById('chatWindow');
-        const chatInput = document.getElementById('chatInput');
-        const msgDiv = document.getElementById('chatMessages');
-
-        document.getElementById('chatToggle').onclick = () => {
-            chatWindow.style.display = chatWindow.style.display === 'none' ? 'flex' : 'none';
-        };
-
-        // ENTER KEY FIX
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        async function sendMessage() {
-            const msg = chatInput.value.trim();
-            if(!msg) return;
-
-            // User message show karna
-            msgDiv.innerHTML += `<div style="align-self:flex-end; background:#22c55e; padding:8px; border-radius:10px; color:white;">${msg}</div>`;
-            chatInput.value = '';
-            msgDiv.scrollTop = msgDiv.scrollHeight;
-
-            // TYPING INDICATOR SHOW KARNA
-            const typingId = "typing-" + Date.now();
-            msgDiv.innerHTML += `<div id="${typingId}" class="typing-indicator">GymAI is typing...</div>`;
-            msgDiv.scrollTop = msgDiv.scrollHeight;
-
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ message: msg })
-                });
-                const data = await res.json();
-                
-                // Typing indicator hatana
-                const indicator = document.getElementById(typingId);
-                if(indicator) indicator.remove();
-
-                // Bot reply dikhana
-                msgDiv.innerHTML += `<div style="align-self:flex-start; background:#334155; padding:8px; border-radius:10px; color:white;"><strong>GymAI:</strong> ${data.reply}</div>`;
-                msgDiv.scrollTop = msgDiv.scrollHeight;
-            } catch (err) {
-                const indicator = document.getElementById(typingId);
-                if(indicator) indicator.remove();
-                msgDiv.innerHTML += `<div style="align-self:flex-start; background:#ef4444; padding:8px; border-radius:10px;">Error connecting to coach.</div>`;
-            }
-        }
-
-        window.onload = setToday;
-
-
-        // --- LOG SESSION FETCH LOGIC ---
-document.getElementById('logSessionForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); // Blank page par janay se rokta hai
-
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-
+    async function loadCompletions() {
     try {
-        const response = await fetch('/fitness-log', {
+        const res = await fetch('/api/workout/completions');
+        const data = await res.json();
+        workoutCompletions = {};
+        allWorkoutHistory = [];
+        data.forEach(item => { 
+            // Convert server date (UTC) to local date string
+            const itemDate = new Date(item.date);
+            const localDate = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
+            workoutCompletions[localDate] = { 
+                status: item.status, 
+                exercises: item.exercises_completed || [] 
+            };
+            allWorkoutHistory.push({ date: localDate, status: item.status });
+        });
+        console.log("Loaded completions:", workoutCompletions); // Debug ke liye
+    } catch(e) { 
+        console.error("Error loading completions:", e);
+        workoutCompletions = {}; 
+        allWorkoutHistory = []; 
+    }
+}
+
+    async function loadStreak() {
+        try {
+            const res = await fetch('/api/workout/streak');
+            const data = await res.json();
+            currentStreak = data.current_streak || 0;
+            document.getElementById('streakDisplay').innerHTML = `🔥 ${currentStreak} Day Streak`;
+        } catch(e) { document.getElementById('streakDisplay').innerHTML = `🔥 0 Day Streak`; }
+    }
+
+    function generateWorkoutPlan() {
+        const plan = workoutDB[currentUserGoal] || workoutDB.health_improve;
+        const todayExercises = plan.exercises[today] || ["Rest Day"];
+        displayTodayWorkout(todayExercises, plan.name);
+        displayWeeklyPlan(plan.exercises);
+        updateTodayProgress();
+    }
+
+    function displayTodayWorkout(exercises, planTitle) {
+        const container = document.getElementById('todayWorkoutContainer');
+        const todayDate = getTodayDate();
+        const completions = workoutCompletions[todayDate];
+        const dayCompleted = completions?.status === 'completed';
+        let html = `<p style="margin-bottom: 12px;"><strong>${planTitle}</strong> — ${today}</p>`;
+        exercises.forEach((ex, idx) => {
+            html += `<div class="workout-item ${dayCompleted ? 'completed' : ''}">
+                        <span>${ex}</span>
+                        ${!dayCompleted ? `<button class="complete-btn" onclick="markExerciseComplete(${idx}, '${today}', '${todayDate}')">✅ Done</button>` : '<span style="color:#22c55e;">✓ Completed</span>'}
+                     </div>`;
+        });
+        html += dayCompleted ? '<p style="color:#22c55e; margin-top:10px;">🎉 Great job! Complete! 🎉</p>' : '';
+        container.innerHTML = html;
+    }
+
+    function displayWeeklyPlan(exercisesMap) {
+        const container = document.getElementById('weeklyWorkoutContainer');
+        let html = '';
+        for (let day of daysOfWeek) {
+            const dayEx = exercisesMap[day] || ["Rest"];
+            const isToday = day === today;
+            const completedStatus = (day === today && workoutCompletions[getTodayDate()]?.status === 'completed');
+            html += `<div class="day-card ${isToday ? 'today' : ''} ${completedStatus ? 'completed' : ''}" onclick="viewDayPlan('${day}')">
+                        <h4>${day} ${completedStatus ? '✓' : ''}</h4>
+                        <p>${dayEx[0]?.substring(0, 28) || 'Rest'}</p>
+                    </div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    window.markExerciseComplete = async function(idx, day, date) {
+    const todayComp = workoutCompletions[date];
+    if (todayComp?.status === 'completed') return;
+    
+    let completedEx = todayComp?.exercises || [];
+    if (!completedEx.includes(idx)) completedEx.push(idx);
+    
+    const totalEx = document.querySelectorAll('#todayWorkoutContainer .workout-item').length;
+    const status = completedEx.length === totalEx ? 'completed' : 'partial';
+    
+    try {
+        const res = await fetch('/api/workout/complete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ date, day_name: day, exercises_completed: completedEx, total_exercises: totalEx, status })
         });
-
-        if (response.ok) {
-            alert("Session logged successfully! 💪");
-            e.target.reset(); // Form khali karne ke liye
-            loadGraph();      // Graph refresh karne ke liye
-        } else {
-            alert("Error saving session. Please try again.");
-        }
-    } catch (err) {
-        console.error("Fetch error:", err);
-        alert("Connection failed!");
+        if (res.ok) {
+            workoutCompletions[date] = { status, exercises: completedEx };
+            
+            // Update progress bar
+            const percent = (completedEx.length / totalEx) * 100;
+            document.getElementById('todayProgressFill').style.width = `${percent}%`;
+            
+            // Update individual exercise buttons
+            const workoutItems = document.querySelectorAll('#todayWorkoutContainer .workout-item');
+            for(let i = 0; i < workoutItems.length; i++) {
+                if(completedEx.includes(i)) {
+                    workoutItems[i].classList.add('completed');
+                    const btn = workoutItems[i].querySelector('.complete-btn');
+                    if(btn) {
+                        btn.remove();
+                        const span = document.createElement('span');
+                        span.style.color = '#22c55e';
+                        span.innerHTML = '✓ Completed';
+                        workoutItems[i].appendChild(span);
+                    }
+                }
+            }
+            
+            // If all exercises completed
+            // If all exercises completed
+if (status === 'completed') {
+    if (!document.querySelector('#completionCelebration')) {
+        const msgDiv = document.createElement('div');
+        msgDiv.id = 'completionCelebration';
+        msgDiv.style.cssText = 'color:#22c55e; margin-top:10px; padding:10px; background:rgba(34,197,94,0.1); border-radius:12px; text-align:center;';
+        msgDiv.innerHTML = '🎉 Great job! Today\'s workout complete! 🎉';
+        document.getElementById('todayWorkoutContainer').appendChild(msgDiv);
     }
-});
+    
+    alert("🎉 Congratulations! Workout complete!");
+    
+    // IMPORTANT: Refresh completions from server first
+    const refreshRes = await fetch('/api/workout/completions');
+    const freshData = await refreshRes.json();
+    workoutCompletions = {};
+    freshData.forEach(item => { 
+        workoutCompletions[item.date] = { status: item.status, exercises: item.exercises_completed || [] };
+    });
+    
+    // Update local completion for today
+    workoutCompletions[date] = { status: 'completed', exercises: completedEx };
+    
+    await loadStreak();
+    renderMonthlyCalendar();  // Calendar will now show green dot
+    updateAnalytics();
+}
+        } else alert("Error saving completion");
+    } catch(e) { 
+        console.error(e);
+        alert("Network error"); 
+    }
+}; 
 
 
+    function updateTodayProgress() {
+        const todayDate = getTodayDate();
+        const comp = workoutCompletions[todayDate];
+        if (comp?.status === 'completed') { document.getElementById('todayProgressFill').style.width = '100%'; return; }
+        const total = document.querySelectorAll('#todayWorkoutContainer .workout-item').length;
+        const done = comp?.exercises?.length || 0;
+        const percent = total ? (done/total)*100 : 0;
+        document.getElementById('todayProgressFill').style.width = `${percent}%`;
+    }
 
-    </script>
+    window.viewDayPlan = (day) => {
+        const plan = workoutDB[currentUserGoal] || workoutDB.health_improve;
+        alert(`${day} Plan:\n${plan.exercises[day]?.join('\n') || "Rest day"}`);
+    };
+
+    // Monthly Calendar
+    function renderMonthlyCalendar() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const startWeekday = firstDay.getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        let calendarHtml = `<div class="calendar-weekday"><div class="grid-2col" style="grid-template-columns: repeat(7, 1fr); display: grid; gap: 8px;">`;
+        const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        weekdays.forEach(day => { calendarHtml += `<div class="calendar-weekday">${day}</div>`; });
+        calendarHtml += `</div><div class="calendar-grid">`;
+        
+        let dayCount = 1;
+        for (let i = 0; i < 42; i++) {
+            if (i < startWeekday || dayCount > daysInMonth) {
+                calendarHtml += `<div class="calendar-day" style="opacity: 0.3;"><div class="calendar-day-number">-</div></div>`;
+            } else {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dayCount).padStart(2,'0')}`;
+                const isComplete = workoutCompletions[dateStr]?.status === 'completed';
+                const isToday = dateStr === getTodayDate();
+                calendarHtml += `<div class="calendar-day ${isComplete ? 'workout-complete' : ''} ${isToday ? 'today-cal' : ''}" onclick="viewDayDetails('${dateStr}')">
+                                    <div class="calendar-day-number">${dayCount}</div>
+                                    <div class="calendar-day-status">${isComplete ? '✅' : '⚪'}</div>
+                                </div>`;
+                dayCount++;
+            }
+        }
+        calendarHtml += `</div>`;
+        document.getElementById('monthlyCalendar').innerHTML = calendarHtml;
+    }
+    
+    window.viewDayDetails = (date) => {
+        const status = workoutCompletions[date]?.status === 'completed' ? "Completed ✓" : "Not completed yet";
+        alert(`📅 ${date}\nStatus: ${status}\nKeep pushing! 💪`);
+    };
+
+    // Analytics Functions
+    function updateAnalytics() {
+        const totalWorkouts = Object.keys(workoutCompletions).filter(d => workoutCompletions[d]?.status === 'completed').length;
+        const totalDays = Object.keys(workoutCompletions).length || 1;
+        const completionRate = Math.round((totalWorkouts / totalDays) * 100);
+        
+        // Calculate best streak
+        let bestStreak = 0, currentStreakCalc = 0;
+        const sortedDates = Object.keys(workoutCompletions).sort();
+        let prevDate = null;
+        for (let date of sortedDates) {
+            if (workoutCompletions[date]?.status === 'completed') {
+                if (prevDate) {
+                    const diff = (new Date(date) - new Date(prevDate)) / (1000 * 60 * 60 * 24);
+                    if (diff === 1) currentStreakCalc++;
+                    else currentStreakCalc = 1;
+                } else currentStreakCalc = 1;
+                bestStreak = Math.max(bestStreak, currentStreakCalc);
+            } else currentStreakCalc = 0;
+            prevDate = date;
+        }
+        
+        // This month workouts
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const monthlyTotal = Object.keys(workoutCompletions).filter(date => {
+            const d = new Date(date);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear && workoutCompletions[date]?.status === 'completed';
+        }).length;
+        
+        document.getElementById('totalWorkouts').innerText = totalWorkouts;
+        document.getElementById('completionRate').innerText = completionRate + '%';
+        document.getElementById('bestStreak').innerText = bestStreak;
+        document.getElementById('monthlyTotal').innerText = monthlyTotal;
+        
+        // Analytics Chart (last 30 days completion trend)
+        const last30Days = [];
+        const completionData = [];
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            last30Days.push(`${d.getMonth()+1}/${d.getDate()}`);
+            completionData.push(workoutCompletions[dateStr]?.status === 'completed' ? 1 : 0);
+        }
+        
+        if (analyticsChart) analyticsChart.destroy();
+        const ctx = document.getElementById('analyticsChart').getContext('2d');
+        analyticsChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: last30Days, datasets: [{ label: 'Workout Complete', data: completionData, backgroundColor: '#22c55e', borderRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: true, aspectRatio: 2, scales: { y: { beginAtZero: true, max: 1, ticks: { stepSize: 1 } } } }
+        });
+    }
+
+    async function loadGraph() {
+        try {
+            const res = await fetch('/fitness-data');
+            const data = await res.json();
+            if (!data || data.length === 0) return;
+            const ctx = document.getElementById("weightChart").getContext("2d");
+            if (myChart) myChart.destroy();
+            const canvas = document.getElementById("weightChart");
+            canvas.style.height = "180px";
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: data.slice(-7).map(d=>d.date.split('T')[0]), datasets: [{ label: 'Weight (kg)', data: data.slice(-7).map(d=>d.weight), borderColor: '#22c55e', tension: 0.3, fill: true, backgroundColor: 'rgba(34,197,94,0.1)' }] },
+                options: { responsive: true, maintainAspectRatio: true, aspectRatio: 2 }
+            });
+        } catch(e) {}
+    }
+
+    document.getElementById('logSessionForm').addEventListener('submit', async(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = Object.fromEntries(fd.entries());
+        try {
+            const resp = await fetch('/fitness-log', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+            if(resp.ok){ alert("Session logged! 💪"); e.target.reset(); loadGraph(); }
+            else alert("Error");
+        } catch(e){ alert("Connection failed"); }
+    });
+
+    window.showSection = (type) => {
+        const extra = document.getElementById('extraContent');
+        const title = document.getElementById('extraTitle');
+        const body = document.getElementById('extraBody');
+        extra.style.display = 'block';
+        if(type === 'workouts') { title.innerText = "🏋️ Workout Plan"; body.innerHTML = `<p>Current goal: ${currentUserGoal || 'Not set'}</p><p>Stick to your daily plan!</p>`; }
+        else { title.innerText = "📈 Progress"; body.innerHTML = `<p>Keep logging weight. Streak: ${currentStreak} 🔥</p>`; }
+        extra.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Chat Functions with Typing Indicator & Quick Messages
+    window.toggleChat = () => { const w = document.getElementById('chatWindow'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; };
+    window.closeChat = () => document.getElementById('chatWindow').style.display = 'none';
+    window.sendQuickMessage = (msg) => { document.getElementById('chatInput').value = msg; sendMessage(); };
+    
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if(!msg) return;
+        const msgDiv = document.getElementById('chatMessages');
+        msgDiv.innerHTML += `<div class="message user-msg">${escapeHtml(msg)}</div>`;
+        input.value = '';
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+        
+        const typing = document.getElementById('typingIndicator');
+        typing.style.display = 'flex';
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+        
+        try {
+            const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message: msg }) });
+            const data = await res.json();
+            typing.style.display = 'none';
+            msgDiv.innerHTML += `<div class="message bot-msg">🤖 ${escapeHtml(data.reply)}</div>`;
+            msgDiv.scrollTop = msgDiv.scrollHeight;
+        } catch(err) {
+            typing.style.display = 'none';
+            msgDiv.innerHTML += `<div class="message bot-msg">⚠️ Connection error. Please try again.</div>`;
+            msgDiv.scrollTop = msgDiv.scrollHeight;
+        }
+    }
+    
+    function handleKeyPress(e) { if(e.key === 'Enter') sendMessage(); }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m;}); }
+    
+    window.sendMessage = sendMessage;
+    window.handleKeyPress = handleKeyPress;
+
+    loadUserData();
+</script>
 </body>
 </html>

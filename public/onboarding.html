@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym AI | Onboarding</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a); 
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
             color: white;
             display: flex;
             justify-content: center;
@@ -24,8 +26,9 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             width: 100%;
-            max-width: 550px;
-            text-align: center;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .section-title {
             font-size: 14px;
@@ -34,17 +37,21 @@
             margin: 20px 0 10px;
             text-align: left;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .goal-container {
+        .section-title i { font-size: 18px; color: #22c55e; }
+        .goal-container, .body-container, .diet-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 12px;
             margin-bottom: 20px;
         }
         .goal-card {
             background: rgba(255, 255, 255, 0.03);
             border: 2px solid #334155;
-            padding: 15px 5px;
+            padding: 12px 5px;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -52,7 +59,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
+            text-align: center;
         }
         .goal-card:hover {
             border-color: #22c55e;
@@ -67,8 +75,9 @@
             display: flex;
             gap: 15px;
             margin: 15px 0;
+            flex-wrap: wrap;
         }
-        .stat-input {
+        .stat-input, select {
             flex: 1;
             background: #1e293b;
             border: 1px solid #334155;
@@ -78,7 +87,7 @@
             outline: none;
             font-family: inherit;
         }
-        .stat-input:focus {
+        .stat-input:focus, select:focus {
             border-color: #22c55e;
         }
         .btn-submit {
@@ -98,103 +107,309 @@
             background: #16a34a;
             box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
         }
+        .tooltip-icon {
+            margin-left: 5px;
+            cursor: help;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        hr {
+            border-color: #334155;
+            margin: 10px 0;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 10px; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: #22c55e;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2>Build Your AI Profile 🚀</h2>
+    <a href="javascript:history.back()" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    <h2><i class="fas fa-robot"></i> <span id="formTitle">Build Your AI Profile</span></h2>
+    <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Let's create your personalized workout & diet plan</p>
+    
     <form action="/save-onboarding" method="POST" id="onboardingForm">
         
-        <div class="section-title">Step 1: Choose Your Goal 🎯</div>
-        <div class="goal-container">
-            <!-- Weight Management -->
-            <div class="goal-card" onclick="setVal('goal', 'fat_loss', this)">
-                <div style="font-size: 22px;">🔥</div>
-                <div style="font-size: 12px; margin-top: 5px;">Fat Loss</div>
+        <!-- Step 1: Goal -->
+        <div class="section-title">
+            <i class="fas fa-bullseye"></i> Step 1: Your Main Goal
+        </div>
+        <div class="goal-container" id="goalContainer">
+            <div class="goal-card" data-goal="weight_loss">
+                <i class="fas fa-fire" style="font-size: 24px;"></i>
+                <span>Weight Loss</span>
             </div>
-            <div class="goal-card" onclick="setVal('goal', 'weight_gain', this)">
-                <div style="font-size: 22px;">⚖️</div>
-                <div style="font-size: 12px; margin-top: 5px;">Weight Gain</div>
+            <div class="goal-card" data-goal="muscle_gain">
+                <i class="fas fa-dumbbell" style="font-size: 24px;"></i>
+                <span>Muscle Gain</span>
             </div>
-            <div class="goal-card" onclick="setVal('goal', 'bulking', this)">
-                <div style="font-size: 22px;">💪</div>
-                <div style="font-size: 12px; margin-top: 5px;">Bulking</div>
+            <div class="goal-card" data-goal="endurance">
+                <i class="fas fa-running" style="font-size: 24px;"></i>
+                <span>Endurance</span>
             </div>
-
-            <!-- Performance -->
-            <div class="goal-card" onclick="setVal('goal', 'strength', this)">
-                <div style="font-size: 22px;">🏋️</div>
-                <div style="font-size: 12px; margin-top: 5px;">Strength</div>
+            <div class="goal-card" data-goal="strength">
+                <i class="fas fa-weight-hanging" style="font-size: 24px;"></i>
+                <span>Strength</span>
             </div>
-            <div class="goal-card" onclick="setVal('goal', 'leg_power', this)">
-                <div style="font-size: 22px;">🦵</div>
-                <div style="font-size: 12px; margin-top: 5px;">Leg Power</div>
+            <div class="goal-card" data-goal="toning">
+                <i class="fas fa-magic" style="font-size: 24px;"></i>
+                <span>Toning</span>
             </div>
-            <div class="goal-card" onclick="setVal('goal', 'endurance', this)">
-                <div style="font-size: 22px;">🏃</div>
-                <div style="font-size: 12px; margin-top: 5px;">Endurance</div>
-            </div>
-
-            <!-- Wellness -->
-            <div class="goal-card" onclick="setVal('goal', 'flexibility', this)">
-                <div style="font-size: 22px;">🧘</div>
-                <div style="font-size: 12px; margin-top: 5px;">Flexibility</div>
-            </div>
-            <div class="goal-card" onclick="setVal('goal', 'athleticism', this)">
-                <div style="font-size: 22px;">⚡</div>
-                <div style="font-size: 12px; margin-top: 5px;">Athleticism</div>
-            </div>
-            <div class="goal-card" onclick="setVal('goal', 'recovery', this)">
-                <div style="font-size: 22px;">🩹</div>
-                <div style="font-size: 12px; margin-top: 5px;">Recovery</div>
+            <div class="goal-card" data-goal="health_improve">
+                <i class="fas fa-heartbeat" style="font-size: 24px;"></i>
+                <span>Health Improve</span>
             </div>
         </div>
 
-        <div class="section-title">Step 2: Physical Stats 📏</div>
+        <!-- Step 2: Body Type -->
+        <div class="section-title">
+            <i class="fas fa-user-circle"></i> Step 2: Your Body Type
+        </div>
+        <div class="body-container" id="bodyContainer">
+            <div class="goal-card" data-body="ectomorph">
+                <i class="fas fa-feather-alt" style="font-size: 24px;"></i>
+                <span>Thin / Slim</span>
+                <small>Patla / Dubla</small>
+            </div>
+            <div class="goal-card" data-body="mesomorph">
+                <i class="fas fa-bolt" style="font-size: 24px;"></i>
+                <span>Athletic / Fit</span>
+                <small>Tanomand</small>
+            </div>
+            <div class="goal-card" data-body="endomorph">
+                <i class="fas fa-chart-line" style="font-size: 24px;"></i>
+                <span>Heavy / Stocky</span>
+                <small>Bhari / Thora Mota</small>
+            </div>
+            <div class="goal-card" data-body="obese">
+                <i class="fas fa-weight-hanging" style="font-size: 24px;"></i>
+                <span>Overweight</span>
+                <small>Zyada Bhari</small>
+            </div>
+        </div>
+
+        <!-- Step 3: Physical Stats -->
+        <div class="section-title">
+            <i class="fas fa-ruler-combined"></i> Step 3: Physical Stats
+        </div>
         <div class="stats-row">
-            <input type="number" name="height" class="stat-input" placeholder="Height (cm)" required>
-            <input type="number" name="weight" class="stat-input" placeholder="Weight (kg)" required>
+            <input type="number" name="height_cm" id="heightInput" class="stat-input" placeholder="Height (cm)" required>
+            <input type="number" name="weight_kg" id="weightInput" class="stat-input" placeholder="Weight (kg)" required>
         </div>
-        
-        <input type="hidden" name="goal" id="inputGoal" required>
-        <input type="hidden" name="diet" id="inputDiet" value="non-veg">
-
-        <div class="section-title">Step 3: Diet Preference 🥦</div>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button type="button" class="goal-card" style="flex:1" onclick="setVal('diet', 'veg', this)">🥦 Veg</button>
-            <button type="button" class="goal-card selected" style="flex:1" onclick="setVal('diet', 'non-veg', this)">🍗 Non-Veg</button>
+        <div class="stats-row">
+            <input type="number" name="age" id="ageInput" class="stat-input" placeholder="Age" required>
+            <select name="gender" id="genderSelect" required>
+                <option value="">Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
         </div>
 
-        <button type="submit" class="btn-submit">Generate My AI Plan</button>
+        <!-- Step 4: Experience & Schedule -->
+        <div class="section-title">
+            <i class="fas fa-calendar-alt"></i> Step 4: Training Preferences
+        </div>
+        <div class="stats-row">
+            <select name="experience_level" id="expSelect" required>
+                <option value="">Experience Level</option>
+                <option value="beginner">Beginner (0-3 months)</option>
+                <option value="intermediate">Intermediate (3-12 months)</option>
+                <option value="advanced">Advanced (1+ years)</option>
+            </select>
+        </div>
+        <div class="stats-row">
+            <select name="workout_days_per_week" id="daysSelect" required>
+                <option value="">Days per week</option>
+                <option value="3">3 days/week</option>
+                <option value="4">4 days/week</option>
+                <option value="5">5 days/week</option>
+                <option value="6">6 days/week</option>
+            </select>
+            <input type="number" name="session_duration_mins" id="durationInput" class="stat-input" placeholder="Minutes per session" min="20" max="120" required>
+        </div>
+        <div class="stats-row">
+            <select name="workout_location" id="locationSelect" required>
+                <option value="">Workout Location</option>
+                <option value="gym">🏋️ Gym</option>
+                <option value="home">🏠 Home (No Equipment)</option>
+                <option value="park">🌳 Park / Garden</option>
+                <option value="mixed">🔄 Mixed</option>
+            </select>
+        </div>
+
+        <!-- Step 5: Diet Preference -->
+        <div class="section-title">
+            <i class="fas fa-utensils"></i> Step 5: Diet Preference
+        </div>
+        <div class="diet-container" id="dietContainer">
+            <div class="goal-card" data-diet="vegetarian">
+                <i class="fas fa-leaf" style="font-size: 24px;"></i>
+                <span>Vegetarian</span>
+            </div>
+            <div class="goal-card" data-diet="eggetarian">
+                <i class="fas fa-egg" style="font-size: 24px;"></i>
+                <span>Eggetarian</span>
+            </div>
+            <div class="goal-card" data-diet="chicken_only">
+                <i class="fas fa-drumstick-bite" style="font-size: 24px;"></i>
+                <span>Chicken Only</span>
+            </div>
+            <div class="goal-card" data-diet="non_veg">
+                <i class="fas fa-bacon" style="font-size: 24px;"></i>
+                <span>Non-Veg (All)</span>
+            </div>
+        </div>
+
+        <input type="hidden" name="fitness_goal" id="inputGoal" required>
+        <input type="hidden" name="body_type" id="inputBodyType" required>
+        <input type="hidden" name="diet_type" id="inputDiet" required>
+
+        <button type="submit" class="btn-submit" id="submitBtn">✨ Generate My Personalized Plan ✨</button>
     </form>
 </div>
 
 <script>
-    function setVal(type, val, el) {
-        // Sirf relevant container ke cards ko target karein
-        const parent = el.parentElement;
-        parent.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
-        
-        // Card highlight karein
-        el.classList.add('selected');
+    // Function to set selected card in a container
+    function setSelected(containerSelector, valueKey, value, cardsAttr) {
+        const container = document.querySelector(containerSelector);
+        if (!container) return;
+        const cards = container.querySelectorAll('.goal-card');
+        cards.forEach(card => {
+            const cardVal = card.getAttribute(cardsAttr);
+            if (cardVal === value) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+    }
 
-        // Hidden input update karein
-        if(type === 'goal') {
-            document.getElementById('inputGoal').value = val;
-        } else if(type === 'diet') {
-            document.getElementById('inputDiet').value = val;
+    // Update hidden inputs based on selected cards
+    function updateHiddenFromSelections() {
+        // Goal
+        const selectedGoalCard = document.querySelector('#goalContainer .goal-card.selected');
+        if (selectedGoalCard) {
+            const goalVal = selectedGoalCard.getAttribute('data-goal');
+            document.getElementById('inputGoal').value = goalVal;
+        }
+        // Body type
+        const selectedBodyCard = document.querySelector('#bodyContainer .goal-card.selected');
+        if (selectedBodyCard) {
+            const bodyVal = selectedBodyCard.getAttribute('data-body');
+            document.getElementById('inputBodyType').value = bodyVal;
+        }
+        // Diet
+        const selectedDietCard = document.querySelector('#dietContainer .goal-card.selected');
+        if (selectedDietCard) {
+            const dietVal = selectedDietCard.getAttribute('data-diet');
+            document.getElementById('inputDiet').value = dietVal;
         }
     }
 
-    // Form submit hone se pehle check karein ke goal select hua ya nahi
+    // Add click listeners to all selectable cards
+    function bindCardClicks() {
+        document.querySelectorAll('#goalContainer .goal-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#goalContainer .goal-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                updateHiddenFromSelections();
+            });
+        });
+        document.querySelectorAll('#bodyContainer .goal-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#bodyContainer .goal-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                updateHiddenFromSelections();
+            });
+        });
+        document.querySelectorAll('#dietContainer .goal-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#dietContainer .goal-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                updateHiddenFromSelections();
+            });
+        });
+    }
+
+    // Load existing profile data and pre-fill form
+    async function loadProfileAndPrefill() {
+        try {
+            const res = await fetch('/api/user-profile');
+            const profile = await res.json();
+            if (profile && profile.fitness_goal) {
+                // Change title to "Edit Profile"
+                document.getElementById('formTitle').innerText = 'Edit Your Profile';
+                document.getElementById('submitBtn').innerHTML = '✨ Update My Plan ✨';
+                
+                // Pre-select goal
+                setSelected('#goalContainer', 'data-goal', profile.fitness_goal, 'data-goal');
+                // Pre-select body type
+                setSelected('#bodyContainer', 'data-body', profile.body_type, 'data-body');
+                // Pre-select diet
+                setSelected('#dietContainer', 'data-diet', profile.diet_type, 'data-diet');
+                
+                // Fill form fields
+                if (profile.height_cm) document.getElementById('heightInput').value = profile.height_cm;
+                if (profile.weight_kg) document.getElementById('weightInput').value = profile.weight_kg;
+                if (profile.age) document.getElementById('ageInput').value = profile.age;
+                if (profile.gender) document.getElementById('genderSelect').value = profile.gender;
+                if (profile.experience_level) document.getElementById('expSelect').value = profile.experience_level;
+                if (profile.workout_days_per_week) document.getElementById('daysSelect').value = profile.workout_days_per_week;
+                if (profile.session_duration_mins) document.getElementById('durationInput').value = profile.session_duration_mins;
+                if (profile.workout_location) document.getElementById('locationSelect').value = profile.workout_location;
+                
+                // Update hidden inputs
+                updateHiddenFromSelections();
+            } else {
+                // No profile, keep "Build Your AI Profile"
+                document.getElementById('formTitle').innerText = 'Build Your AI Profile';
+                document.getElementById('submitBtn').innerHTML = '✨ Generate My Personalized Plan ✨';
+            }
+        } catch (err) {
+            console.error("Error loading profile:", err);
+        }
+    }
+
+    // Validate before submit
     document.getElementById('onboardingForm').onsubmit = function(e) {
         if (!document.getElementById('inputGoal').value) {
-            alert("Please select your fitness goal first!");
+            alert("Please select your fitness goal.");
             e.preventDefault();
+            return false;
         }
+        if (!document.getElementById('inputBodyType').value) {
+            alert("Please select your body type.");
+            e.preventDefault();
+            return false;
+        }
+        if (!document.getElementById('inputDiet').value) {
+            alert("Please select your diet preference.");
+            e.preventDefault();
+            return false;
+        }
+        // Additional validation for required fields
+        const height = document.getElementById('heightInput').value;
+        const weight = document.getElementById('weightInput').value;
+        const age = document.getElementById('ageInput').value;
+        if (!height || !weight || !age) {
+            alert("Please fill all physical stats (height, weight, age).");
+            e.preventDefault();
+            return false;
+        }
+        return true;
     };
-</script>
 
+    // Initialize
+    bindCardClicks();
+    loadProfileAndPrefill();
+</script>
 </body>
 </html>

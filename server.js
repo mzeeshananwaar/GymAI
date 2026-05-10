@@ -139,6 +139,7 @@ app.post("/signup", async (req, res) => {
  
 // --- LOGIN ROUTE ---
 // --- USER AUTHENTICATION: LOGIN ---
+// --- USER AUTHENTICATION: LOGIN ---
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -171,6 +172,13 @@ app.post("/login", async (req, res) => {
       goal: user.goal
     };
 
+    // 🔁 Check if user has completed onboarding (profile exists in new table)
+    const [profileRows] = await pool.query(
+      "SELECT user_id FROM user_fitness_profiles WHERE user_id = ?",
+      [user.id]
+    );
+    const hasProfile = profileRows.length > 0;
+
     // 💾 session save
     req.session.save((err) => {
       if (err) {
@@ -182,9 +190,7 @@ app.post("/login", async (req, res) => {
 
       res.json({
         success: true,
-        redirectTo: (!user.goal || user.goal === "") 
-  ? "/onboarding.html" 
-  : "/dashboard.html"
+        redirectTo: hasProfile ? "/dashboard.html" : "/onboarding.html"
       });
     });
 
@@ -194,35 +200,64 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
 //onboarding
+// ============================================
+// ONBOARDING SAVE (using user_fitness_profiles table)
+// ============================================
 app.post('/save-onboarding', async (req, res) => {
-    const { goal, diet, height, weight, experience } = req.body;
-
     try {
-        // check session
         if (!req.session.user) {
             return res.redirect('/login.html');
         }
-
         const userId = req.session.user.id;
 
-        // update DB
-        await pool.query(
-            "UPDATE users SET goal = ?, diet_type = ?, experience = ?, height = ?, weight = ? WHERE id = ?",
-            [goal, diet, experience, height, weight, userId]
-        );
+        console.log("Received onboarding data:", req.body);
 
-        // update session
-        req.session.user.goal = goal;
-        req.session.user.diet = diet;
+        const {
+            fitness_goal, body_type, height_cm, weight_kg, age, gender,
+            experience_level, workout_days_per_week, session_duration_mins,
+            workout_location, diet_type
+        } = req.body;
 
-        // redirect
+        // Validation
+        if (!fitness_goal || !body_type || !diet_type || !height_cm || !weight_kg) {
+            console.log("Missing required fields");
+            return res.status(400).send("Missing required fields");
+        }
+
+        // Insert or update into user_fitness_profiles
+        await pool.query(`
+            INSERT INTO user_fitness_profiles 
+            (user_id, fitness_goal, body_type, height_cm, weight_kg, age, gender,
+             experience_level, workout_days_per_week, session_duration_mins,
+             workout_location, diet_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+            fitness_goal = VALUES(fitness_goal),
+            body_type = VALUES(body_type),
+            height_cm = VALUES(height_cm),
+            weight_kg = VALUES(weight_kg),
+            age = VALUES(age),
+            gender = VALUES(gender),
+            experience_level = VALUES(experience_level),
+            workout_days_per_week = VALUES(workout_days_per_week),
+            session_duration_mins = VALUES(session_duration_mins),
+            workout_location = VALUES(workout_location),
+            diet_type = VALUES(diet_type),
+            updated_at = NOW()
+        `, [userId, fitness_goal, body_type, height_cm, weight_kg, age, gender,
+            experience_level, workout_days_per_week, session_duration_mins,
+            workout_location, diet_type]);
+
+        // Also update users table goal for backward compatibility (optional)
+        await pool.query("UPDATE users SET goal = ? WHERE id = ?", [fitness_goal, userId]);
+
+        console.log("Onboarding data saved for user:", userId);
         res.redirect('/dashboard.html');
 
     } catch (err) {
-        console.error("ONBOARDING ERROR:", err);
-        res.status(500).send("Error updating fitness profile.");
+        console.error("ONBOARDING SAVE ERROR:", err);
+        res.status(500).send("Database error: " + err.message);
     }
 });
 
@@ -410,3 +445,151 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`GymAI Server running on port ${PORT}...`);
 });
+
+// ============================================
+// NEW ONBOARDING & WORKOUT TRACKING APIs
+// ============================================
+
+// Check if user has completed onboarding (profile exists)
+app.get('/api/onboarding/status', async (req, res) => {
+    try {
+        if (!req.session.user) return res.json({ completed: false });
+        const userId = req.session.user.id;
+        const [rows] = await pool.query(
+            "SELECT user_id FROM user_fitness_profiles WHERE user_id = ?",
+            [userId]
+        );
+        res.json({ completed: rows.length > 0 });
+    } catch (err) {
+        console.error(err);
+        res.json({ completed: false });
+    }
+});
+
+// Save onboarding data into user_fitness_profiles
+
+
+// Get user fitness profile (for dashboard)
+app.get('/api/user-profile', async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+        const userId = req.session.user.id;
+        const [rows] = await pool.query(
+            "SELECT * FROM user_fitness_profiles WHERE user_id = ?",
+            [userId]
+        );
+        res.json(rows[0] || null);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Save workout completion for a day
+app.post('/api/workout/complete', async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+        const userId = req.session.user.id;
+        const { date, day_name, exercises_completed, total_exercises, status } = req.body;
+
+        await pool.query(`
+            INSERT INTO workout_completions 
+            (user_id, date, day_name, exercises_completed, total_exercises, status, completed_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+            ON DUPLICATE KEY UPDATE
+            exercises_completed = VALUES(exercises_completed),
+            total_exercises = VALUES(total_exercises),
+            status = VALUES(status),
+            completed_at = NOW()
+        `, [userId, date, day_name, JSON.stringify(exercises_completed), total_exercises, status]);
+
+        // Update streak
+        await updateUserStreak(userId, date, status === 'completed');
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get all workout completions for a user
+app.get('/api/workout/completions', async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+        const userId = req.session.user.id;
+        const [rows] = await pool.query(
+            "SELECT * FROM workout_completions WHERE user_id = ? ORDER BY date DESC",
+            [userId]
+        );
+        // Parse JSON strings back to arrays
+        rows.forEach(row => {
+            if (row.exercises_completed) row.exercises_completed = JSON.parse(row.exercises_completed);
+            else row.exercises_completed = [];
+        });
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get streak data
+app.get('/api/workout/streak', async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+        const userId = req.session.user.id;
+        const [rows] = await pool.query(
+            "SELECT * FROM user_streaks WHERE user_id = ?",
+            [userId]
+        );
+        if (rows.length === 0) {
+            return res.json({ current_streak: 0, longest_streak: 0 });
+        }
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Helper function to update streak (MySQL version)
+async function updateUserStreak(userId, workoutDate, isCompleted) {
+    if (!isCompleted) return;
+    const today = new Date(workoutDate);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Get current streak record
+    const [streakRows] = await pool.query(
+        "SELECT * FROM user_streaks WHERE user_id = ?",
+        [userId]
+    );
+
+    let currentStreak = 1;
+    let streakStartDate = today;
+    let longestStreak = 1;
+
+    if (streakRows.length > 0) {
+        const lastDate = new Date(streakRows[0].last_workout_date);
+        const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+            currentStreak = streakRows[0].current_streak + 1;
+            streakStartDate = streakRows[0].streak_start_date;
+        } else if (diffDays === 0) {
+            // Same day, no change
+            return;
+        }
+        longestStreak = Math.max(currentStreak, streakRows[0].longest_streak);
+    } else {
+        longestStreak = 1;
+    }
+
+    await pool.query(`
+        INSERT INTO user_streaks (user_id, current_streak, longest_streak, last_workout_date, streak_start_date, updated_at)
+        VALUES (?, ?, ?, ?, ?, NOW())
+        ON DUPLICATE KEY UPDATE
+        current_streak = VALUES(current_streak),
+        longest_streak = VALUES(longest_streak),
+        last_workout_date = VALUES(last_workout_date),
+        streak_start_date = VALUES(streak_start_date),
+        updated_at = NOW()
+    `, [userId, currentStreak, longestStreak, today, streakStartDate]);
+}
